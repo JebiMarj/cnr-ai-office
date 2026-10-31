@@ -1,0 +1,9 @@
+# Local config for the phase 1 office. Do not link this repo to a hosted project
+# from automation. Apply the migration and deploy the function after review.
+project_id = "cnr-ai-office"
+
+# Bots authenticate with the shared secret header, not a user JWT.
+# office_private is not an exposed Data API schema. post-status calls
+# public.office_agent_secret_hash() instead.
+[functions.post-status]
+verify_jwt = false
