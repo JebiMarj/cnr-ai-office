@@ -68,8 +68,8 @@ export function App() {
                 <p className="empty">No desks are staffed yet.</p>
               ) : (
                 <div className="desk-grid">
-                  {staff.map((agent) => (
-                    <DeskCard key={agent.id} agent={agent} now={now} />
+                  {staff.map((agent, index) => (
+                    <DeskCard key={agent.id} agent={agent} now={now} index={index} />
                   ))}
                 </div>
               )}

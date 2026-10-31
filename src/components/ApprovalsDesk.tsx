@@ -19,7 +19,7 @@ export function ApprovalsDesk({ approvals, now }: { approvals: Approval[]; now: 
         <ol className="stack">
           {pending.map((item) => (
             <li key={item.id} className="approval">
-              <Avatar slug={item.agentSlug} size="sm" />
+              <Avatar slug={item.agentSlug} size="sm" status="waiting_on_jv" />
               <div className="approval-copy">
                 <p className="who">{item.agentName}</p>
                 <p className="approval-title">{item.title}</p>

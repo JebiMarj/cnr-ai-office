@@ -17,7 +17,7 @@ export function ActivityFeed({ activities, now }: { activities: Activity[]; now:
         <ol className="stack feed-list">
           {rows.map((item) => (
             <li key={item.id} className="activity-row">
-              <Avatar slug={item.agentSlug} size="sm" />
+              <Avatar slug={item.agentSlug} size="sm" status={item.status} />
               <div className="activity-copy">
                 <p className="who">{item.agentName}</p>
                 <p className="activity-title">{item.taskTitle}</p>

@@ -1,12 +1,16 @@
 type AvatarProps = {
   slug: string
   size?: 'lg' | 'md' | 'sm'
+  status?: string
 }
 
-export function Avatar({ slug, size = 'md' }: AvatarProps) {
+export function Avatar({ slug, size = 'md', status = 'idle' }: AvatarProps) {
+  const scale = size === 'sm' ? 'small' : size === 'lg' ? 'large' : ''
   return (
-    <span className={`avatar ${size === 'sm' ? 'small' : ''} ${size === 'lg' ? 'large' : ''}`} data-slug={slug} aria-hidden="true">
-      <Glyph slug={slug} />
+    <span className={`avatar-halo ${scale}`} data-status={status} aria-hidden="true">
+      <span className={`avatar ${scale}`} data-slug={slug}>
+        <Glyph slug={slug} />
+      </span>
     </span>
   )
 }

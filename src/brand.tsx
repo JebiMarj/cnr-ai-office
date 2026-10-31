@@ -18,7 +18,7 @@ export const brand = {
     gold: '#FDBE6A',
     ink: '#07060b',
     paper: '#f6f1e8',
-    muted: '#c4b8ae',
+    muted: '#d7cdc4',
   },
 } as const
 

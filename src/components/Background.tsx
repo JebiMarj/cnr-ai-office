@@ -13,7 +13,7 @@ export function Background() {
 
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)')
     const fine = window.matchMedia('(pointer: fine)')
-    const stars = createStars(90)
+    const stars = createStars(150)
     let frame = 0
     let running = !motion.matches
 
@@ -87,9 +87,12 @@ export function Background() {
 
   return (
     <div className="sky" aria-hidden="true">
-      <div className="orb orb-pink" />
-      <div className="orb orb-gold" />
-      <canvas ref={canvasRef} className="stars" />
+      <div className="aurora aurora-a" />
+      <div className="aurora aurora-b" />
+      <div className="aurora aurora-c" />
+      <div className="stars-layer">
+        <canvas ref={canvasRef} className="stars" />
+      </div>
       <div className="floor-grid" />
       <div className="vignette" />
     </div>

@@ -21,7 +21,7 @@ export function BossOffice({
     <section className="panel boss" data-testid="boss-office" data-status={status}>
       <div className="boss-copy">
         <div className="boss-identity">
-          <Avatar slug={agent.slug} size="lg" />
+          <Avatar slug={agent.slug} size="lg" status={status} />
           <div>
             <p className="kicker">Corner office</p>
             <h2 className="boss-name">{agent.name}</h2>
