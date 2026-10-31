@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { handlePostStatus } from '../supabase/functions/post-status/http.ts'
+import { sha256Hex } from '../supabase/functions/post-status/secret.ts'
 import { createMemoryDb } from './memoryDb.ts'
 
 const SECRET = 'test-office-secret'
@@ -14,6 +15,7 @@ function call(
     db?: ReturnType<typeof createMemoryDb> | null
     now?: Date
     raw?: string
+    lookupSecretHash?: () => Promise<string | null>
   } = {},
 ) {
   const db = init.db === undefined ? createMemoryDb() : init.db
@@ -30,6 +32,7 @@ function call(
   return handlePostStatus(request, {
     secret: init.configuredSecret === undefined ? SECRET : init.configuredSecret,
     createDb: () => db,
+    lookupSecretHash: init.lookupSecretHash,
     now: init.now,
   }).then(async (response) => ({
     status: response.status,
@@ -46,7 +49,8 @@ describe('post-status handler', () => {
     expect(get.allow).toBe('POST')
 
     const missing = await call({ action: 'set_jv_status', status: 'away' }, { configuredSecret: '' })
-    expect(missing.status).toBe(500)
+    expect(missing.status).toBe(503)
+    expect(missing.body.error).toBe('The office secret is not configured.')
 
     const unauthorized = await call({ action: 'set_jv_status', status: 'away' }, { secret: 'nope' })
     expect(unauthorized.status).toBe(401)
@@ -171,6 +175,69 @@ describe('post-status handler', () => {
       status: 'idle',
     }, { db })
     expect(unknown.status).toBe(404)
+  })
+
+  it('accepts the header when only its SHA-256 hash is stored', async () => {
+    const db = createMemoryDb()
+    const stored = await sha256Hex(SECRET)
+    let lookups = 0
+    const accepted = await call({ action: 'set_jv_status', status: 'away' }, {
+      db,
+      configuredSecret: '',
+      lookupSecretHash: async () => {
+        lookups += 1
+        return stored
+      },
+    })
+    expect(accepted.status).toBe(200)
+    expect(lookups).toBe(1)
+    expect(db.agents.get('jv')?.status).toBe('away')
+    expect(JSON.stringify(accepted.body)).not.toContain(stored)
+
+    const rejected = await call({ action: 'set_jv_status', status: 'online' }, {
+      db,
+      secret: 'wrong-secret',
+      configuredSecret: '',
+      lookupSecretHash: async () => stored,
+    })
+    expect(rejected.status).toBe(401)
+    expect(rejected.body.error).toBe('Unauthorized.')
+    expect(JSON.stringify(rejected.body)).not.toContain(stored)
+    expect(JSON.stringify(rejected.body)).not.toContain('wrong-secret')
+    expect(db.agents.get('jv')?.status).toBe('away')
+  })
+
+  it('prefers the env secret and returns 503 when neither source is configured', async () => {
+    const db = createMemoryDb()
+    let lookups = 0
+    const fromEnv = await call({ action: 'set_jv_status', status: 'in_meeting' }, {
+      db,
+      lookupSecretHash: async () => {
+        lookups += 1
+        throw new Error('hash should not be read')
+      },
+    })
+    expect(fromEnv.status).toBe(200)
+    expect(lookups).toBe(0)
+
+    const unconfigured = await call({ action: 'set_jv_status', status: 'away' }, {
+      db,
+      configuredSecret: '',
+      lookupSecretHash: async () => null,
+    })
+    expect(unconfigured.status).toBe(503)
+    expect(unconfigured.body.error).toBe('The office secret is not configured.')
+
+    const brokenLookup = await call({ action: 'set_jv_status', status: 'away' }, {
+      db,
+      configuredSecret: '',
+      lookupSecretHash: async () => {
+        throw new Error('relation settings')
+      },
+    })
+    expect(brokenLookup.status).toBe(500)
+    expect(brokenLookup.body.error).toBe('The office could not check the secret.')
+    expect(JSON.stringify(brokenLookup.body)).not.toContain('relation')
   })
 
   it('hides database failures', async () => {

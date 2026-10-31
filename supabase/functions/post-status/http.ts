@@ -1,10 +1,11 @@
 import { applyCommand, type OfficeDb } from './apply.ts'
-import { secretsMatch } from './secret.ts'
+import { secretHashMatches, secretsMatch } from './secret.ts'
 import { LIMITS, parseOfficeCommand } from './validate.ts'
 
 export type HandlerDeps = {
   secret: string | undefined
   createDb: () => OfficeDb | null
+  lookupSecretHash?: () => Promise<string | null>
   now?: Date
 }
 
@@ -13,14 +14,8 @@ export async function handlePostStatus(request: Request, deps: HandlerDeps): Pro
     return json({ ok: false, error: 'Method not allowed.' }, 405, { allow: 'POST' })
   }
 
-  if (!deps.secret) {
-    return json({ ok: false, error: 'The office secret is not configured.' }, 500)
-  }
-
-  const authorized = await secretsMatch(request.headers.get('x-office-secret'), deps.secret)
-  if (!authorized) {
-    return json({ ok: false, error: 'Unauthorized.' }, 401)
-  }
+  const authorized = await authorize(request, deps)
+  if (authorized) return authorized
 
   const contentType = request.headers.get('content-type') ?? ''
   if (!contentType.toLowerCase().includes('application/json')) {
@@ -62,6 +57,27 @@ export async function handlePostStatus(request: Request, deps: HandlerDeps): Pro
   } catch {
     return json({ ok: false, error: 'The office could not save that update.' }, 500)
   }
+}
+
+async function authorize(request: Request, deps: HandlerDeps): Promise<Response | null> {
+  const header = request.headers.get('x-office-secret')
+  if (deps.secret) {
+    const matches = await secretsMatch(header, deps.secret)
+    return matches ? null : json({ ok: false, error: 'Unauthorized.' }, 401)
+  }
+
+  let storedHash: string | null
+  try {
+    storedHash = deps.lookupSecretHash ? await deps.lookupSecretHash() : null
+  } catch {
+    return json({ ok: false, error: 'The office could not check the secret.' }, 500)
+  }
+  if (!storedHash) {
+    return json({ ok: false, error: 'The office secret is not configured.' }, 503)
+  }
+
+  const matches = await secretHashMatches(header, storedHash)
+  return matches ? null : json({ ok: false, error: 'Unauthorized.' }, 401)
 }
 
 function json(body: unknown, status: number, extra: Record<string, string> = {}): Response {

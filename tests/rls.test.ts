@@ -215,6 +215,52 @@ describe('RLS', () => {
     expect(after.rows[0]).toEqual({ task: null, pending: 3 })
   })
 
+  it('keeps the agent secret hash in a forced-RLS table with no policies', async () => {
+    const table = await db.query<{ relrowsecurity: boolean; relforcerowsecurity: boolean }>(`
+      select c.relrowsecurity, c.relforcerowsecurity
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      where n.nspname = 'office_private' and c.relname = 'settings'
+    `)
+    expect(table.rows[0]).toEqual({ relrowsecurity: true, relforcerowsecurity: true })
+
+    const policies = await db.query<{ n: number }>(`
+      select count(*)::int as n
+      from pg_policies
+      where schemaname = 'office_private' and tablename = 'settings'
+    `)
+    expect(policies.rows[0]?.n).toBe(0)
+
+    for (const role of ['anon', 'authenticated'] as const) {
+      const privileges = await db.query<{ select: boolean; write: boolean }>(`
+        select
+          has_table_privilege('${role}', 'office_private.settings', 'SELECT') as select,
+          has_table_privilege('${role}', 'office_private.settings', 'INSERT,UPDATE,DELETE') as write
+      `)
+      expect(privileges.rows[0], role).toEqual({ select: false, write: false })
+    }
+
+    await expectDenied('anon', `select value from office_private.settings`)
+    await expectDenied('anon', `select office_private.agent_secret_hash()`)
+    await expectDenied('authenticated', `select office_private.agent_secret_hash()`)
+
+    const hash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
+    await db.exec('begin')
+    try {
+      await db.exec('set local role service_role')
+      await db.query(`
+        insert into office_private.settings (key, value)
+        values ('agent_secret_sha256', '${hash}')
+      `)
+      const stored = await db.query<{ agent_secret_hash: string }>(
+        `select office_private.agent_secret_hash()`,
+      )
+      expect(stored.rows[0]?.agent_secret_hash).toBe(hash)
+    } finally {
+      await db.exec('rollback')
+    }
+  })
+
   it('lets the service role write because it bypasses row level security', async () => {
     await db.exec('begin')
     try {
