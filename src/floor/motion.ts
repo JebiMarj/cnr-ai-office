@@ -4,16 +4,18 @@ import { isExecutive } from '../data/shift.ts'
 import type { OfficeSnapshot } from '../data/types.ts'
 
 /**
- * Isometric floor. World x grows east and y grows south.
- * People walk the aisle graph. Idle bots tour the lounge, rest room,
- * library, pantry, and gym on a seeded schedule.
+ * Floor plan in metres. x grows east and y grows south, matching the
+ * reference office: offices and kitchen along the north, work pods to
+ * the southwest, lounge and reception to the southeast.
+ * The 3D view treats y as z. Idle bots tour the lounge, reading nook,
+ * and kitchenette on a seeded walkway.
  */
 
 export type Vec = { x: number; y: number }
 
 export type ZoneId = 'desk' | 'lounge' | 'conference' | 'away' | 'offline'
 
-export type BodyPose = 'sit' | 'stand' | 'walk' | 'treadmill'
+export type BodyPose = 'sit' | 'stand' | 'walk'
 
 export type FloorAgent = {
   slug: string
@@ -43,24 +45,24 @@ export type Pose = {
 
 export const TILE_W = 68
 export const TILE_H = 34
-export const WALK_SPEED = 4.8
+export const WALK_SPEED = 1.65
 
-export const FLOOR = { cols: 26, rows: 22 }
+export const FLOOR = { width: 16.4, depth: 12.2 }
 
-const NORTH = 6.45
-const SOUTH = 12.25
+const NORTH = 5.2
+const SOUTH = 9.95
 export const CORRIDOR_Y = [NORTH, SOUTH] as const
 
 export const ROOMS = {
-  library: { x: 0.3, y: 0.28, w: 5.15, h: 5.85 },
-  vp: { x: 16.35, y: 0.28, w: 4.55, h: 5.85 },
-  office: { x: 21.05, y: 0.28, w: 4.65, h: 5.85 },
-  pantry: { x: 0.3, y: 6.85, w: 5.15, h: 5.05 },
-  conference: { x: 18.55, y: 7.05, w: 7.1, h: 4.95 },
-  lounge: { x: 0.3, y: 13.05, w: 7.0, h: 4.85 },
-  rest: { x: 9.6, y: 13.05, w: 5.2, h: 4.85 },
-  gym: { x: 15.0, y: 13.15, w: 10.65, h: 4.75 },
-  reception: { x: 10.15, y: 18.4, w: 4.9, h: 2.15 },
+  office: { x: 0.2, y: 0.2, w: 5.4, h: 4.6 },
+  vp: { x: 5.6, y: 0.2, w: 3.3, h: 4.6 },
+  pantry: { x: 8.9, y: 0.2, w: 3.4, h: 4.4 },
+  storage: { x: 12.3, y: 0.2, w: 2.2, h: 2.8 },
+  restroom: { x: 14.5, y: 0.2, w: 1.7, h: 2.8 },
+  conference: { x: 12.3, y: 3.05, w: 3.9, h: 3.55 },
+  nook: { x: 8.95, y: 6.95, w: 2.15, h: 1.7 },
+  work: { x: 0.2, y: 5.45, w: 8.3, h: 6.55 },
+  lounge: { x: 8.75, y: 6.75, w: 7.45, h: 5.25 },
 } as const
 
 export type RoomId = keyof typeof ROOMS
@@ -77,34 +79,34 @@ const SHORT_ROLE: Record<string, string> = {
 }
 
 const DESKS: Record<string, Vec> = {
-  alex: { x: 7.7, y: 3.05 },
-  sage: { x: 10.55, y: 3.05 },
-  dev: { x: 13.4, y: 3.05 },
-  mechanicus: { x: 7.7, y: 9.45 },
-  tech: { x: 10.55, y: 9.45 },
-  gia: { x: 13.4, y: 9.45 },
-  marj: { x: 18.55, y: 3.15 },
-  jv: { x: 23.25, y: 3.15 },
+  alex: { x: 1.85, y: 6.55 },
+  sage: { x: 3.95, y: 6.55 },
+  dev: { x: 6.05, y: 6.55 },
+  mechanicus: { x: 1.85, y: 8.85 },
+  tech: { x: 3.95, y: 8.85 },
+  gia: { x: 6.05, y: 8.85 },
+  jv: { x: 2.15, y: 2.35 },
+  marj: { x: 7.15, y: 2.35 },
 }
 
 const LOUNGE_SPOTS: Vec[] = [
-  { x: 1.45, y: 14.7 },
-  { x: 3.25, y: 14.6 },
-  { x: 5.35, y: 14.75 },
-  { x: 1.55, y: 16.35 },
-  { x: 3.35, y: 16.25 },
-  { x: 5.45, y: 16.4 },
+  { x: 12.05, y: 8.15 },
+  { x: 13.35, y: 8.1 },
+  { x: 14.7, y: 8.2 },
+  { x: 12.4, y: 10.45 },
+  { x: 14.15, y: 10.55 },
+  { x: 15.4, y: 9.75 },
 ]
 
 const LOUNGE_ORDER = ['alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia']
 
 const CONF_SEATS: Record<string, Vec> = {
-  jv: { x: 23.55, y: 9.15 },
-  marj: { x: 20.35, y: 10.35 },
+  jv: { x: 15.15, y: 4.7 },
+  marj: { x: 13.35, y: 4.7 },
 }
 
-export type IdlePose = 'sit' | 'stand' | 'treadmill'
-export type IdleRoom = 'lounge' | 'rest' | 'library' | 'pantry' | 'gym'
+export type IdlePose = 'sit' | 'stand'
+export type IdleRoom = 'lounge' | 'nook' | 'pantry'
 
 export type IdlePlace = {
   id: string
@@ -119,73 +121,52 @@ function idle(id: string, room: IdleRoom, point: Vec, pose: IdlePose): IdlePlace
 
 const PLACES: IdlePlace[] = [
   ...LOUNGE_SPOTS.map((point, index) => idle(`lounge-${index}`, 'lounge', point, 'sit')),
-  idle('rest-0', 'rest', { x: 10.45, y: 14.7 }, 'sit'),
-  idle('rest-1', 'rest', { x: 12.15, y: 14.6 }, 'sit'),
-  idle('rest-2', 'rest', { x: 13.7, y: 14.85 }, 'sit'),
-  idle('rest-3', 'rest', { x: 11.15, y: 16.35 }, 'sit'),
-  idle('rest-4', 'rest', { x: 13.05, y: 16.25 }, 'sit'),
-  idle('library-0', 'library', { x: 2.35, y: 4.55 }, 'sit'),
-  idle('library-1', 'library', { x: 4.05, y: 4.85 }, 'sit'),
-  idle('pantry-coffee', 'pantry', { x: 1.65, y: 8.2 }, 'stand'),
-  idle('pantry-0', 'pantry', { x: 2.45, y: 10.55 }, 'sit'),
-  idle('pantry-1', 'pantry', { x: 4.05, y: 10.7 }, 'sit'),
-  idle('gym-tread', 'gym', { x: 16.85, y: 15.75 }, 'treadmill'),
-  idle('gym-weights', 'gym', { x: 19.55, y: 15.85 }, 'stand'),
-  idle('gym-bench', 'gym', { x: 22.35, y: 16.15 }, 'sit'),
+  idle('nook-0', 'nook', { x: 9.45, y: 7.55 }, 'sit'),
+  idle('nook-1', 'nook', { x: 10.55, y: 7.7 }, 'sit'),
+  idle('pantry-0', 'pantry', { x: 10.25, y: 3.5 }, 'sit'),
+  idle('pantry-1', 'pantry', { x: 11.35, y: 3.55 }, 'sit'),
+  idle('pantry-coffee', 'pantry', { x: 9.5, y: 1.35 }, 'stand'),
 ]
 
 const CREW = ['alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia'] as const
 
 const BIAS: Record<string, IdleRoom[]> = {
-  alex: ['rest', 'pantry', 'library', 'gym', 'lounge'],
-  mechanicus: ['gym', 'rest', 'pantry', 'library', 'lounge'],
-  sage: ['library', 'gym', 'rest', 'pantry', 'lounge'],
-  dev: ['gym', 'library', 'pantry', 'rest', 'lounge'],
-  tech: ['pantry', 'library', 'gym', 'rest', 'lounge'],
-  gia: ['rest', 'pantry', 'gym', 'library', 'lounge'],
+  alex: ['pantry', 'nook', 'lounge'],
+  mechanicus: ['nook', 'pantry', 'lounge'],
+  sage: ['pantry', 'nook', 'lounge'],
+  dev: ['nook', 'pantry', 'lounge'],
+  tech: ['pantry', 'nook', 'lounge'],
+  gia: ['nook', 'pantry', 'lounge'],
 }
 
 const NODES: Record<string, Vec> = {
-  westN: { x: 5.85, y: NORTH },
-  aAlex: { x: 7.7, y: NORTH },
-  v1n: { x: 9.1, y: NORTH },
-  aSage: { x: 10.55, y: NORTH },
-  v2n: { x: 11.95, y: NORTH },
-  aDev: { x: 13.4, y: NORTH },
-  spineN: { x: 15.15, y: NORTH },
-  vpDoor: { x: 17.9, y: NORTH },
-  officeDoor: { x: 22.15, y: NORTH },
-  eastN: { x: 24.3, y: NORTH },
-  vLib: { x: 5.85, y: 3.25 },
-  libDoor: { x: 5.35, y: 3.25 },
-  libHub: { x: 3.55, y: 3.45 },
-  vPan: { x: 5.85, y: 9.15 },
-  panDoor: { x: 5.35, y: 9.15 },
-  panHub: { x: 3.25, y: 9.25 },
-  corLounge: { x: 3.55, y: SOUTH },
-  vWestS: { x: 5.85, y: SOUTH },
-  sMech: { x: 7.7, y: SOUTH },
-  hall: { x: 8.45, y: SOUTH },
-  v1s: { x: 9.1, y: SOUTH },
-  sTech: { x: 10.55, y: SOUTH },
-  v2s: { x: 11.95, y: SOUTH },
-  sGia: { x: 13.4, y: SOUTH },
-  spineS: { x: 15.15, y: SOUTH },
-  gymDoor: { x: 17.2, y: SOUTH },
-  confDoor: { x: 21.15, y: SOUTH },
-  loungeHub: { x: 3.55, y: 13.7 },
-  loungeWest: { x: 0.95, y: 15.55 },
-  restHub: { x: 12.05, y: 13.65 },
-  restSide: { x: 10.05, y: 15.5 },
-  gymHub: { x: 18.15, y: 13.8 },
-  confJv: CONF_SEATS.jv,
-  confMarj: CONF_SEATS.marj,
-  hallMid: { x: 8.45, y: 16.4 },
-  hallSouth: { x: 8.45, y: 18.55 },
-  exitDoor: { x: 8.45, y: 21.45 },
-  away: { x: 8.45, y: 23.15 },
-  awayJv: { x: 7.15, y: 23.15 },
-  awayMarj: { x: 9.85, y: 23.15 },
+  cWest: { x: 0.85, y: NORTH },
+  cAlex: { x: 1.85, y: NORTH },
+  cSage: { x: 3.95, y: NORTH },
+  cDev: { x: 6.05, y: NORTH },
+  cMarj: { x: 7.15, y: NORTH },
+  cEdge: { x: 8.55, y: NORTH },
+  cKit: { x: 10.5, y: NORTH },
+  cMeet: { x: 12.05, y: NORTH },
+  jvDoor: { x: 2.15, y: 4.7 },
+  marjDoor: { x: 7.15, y: 4.7 },
+  kitDoor: { x: 10.5, y: 4.55 },
+  kitHub: { x: 10.5, y: 2.4 },
+  meetDoor: { x: 12.35, y: 4.9 },
+  confJv: CONF_SEATS.jv!,
+  confMarj: CONF_SEATS.marj!,
+  sWest: { x: 0.85, y: SOUTH },
+  sAlex: { x: 1.85, y: SOUTH },
+  sSage: { x: 3.95, y: SOUTH },
+  sDev: { x: 6.05, y: SOUTH },
+  sEdge: { x: 8.55, y: SOUTH },
+  loungeHub: { x: 13.2, y: 9.3 },
+  nookHub: { x: 10.0, y: 7.2 },
+  entry: { x: 12.4, y: 11.7 },
+  exitDoor: { x: 12.4, y: 12.35 },
+  away: { x: 12.4, y: 13.15 },
+  awayJv: { x: 11.45, y: 13.2 },
+  awayMarj: { x: 13.35, y: 13.2 },
 }
 
 const AWAY_SPOTS: Record<string, Vec> = {
@@ -197,53 +178,39 @@ for (const [slug, point] of Object.entries(DESKS)) NODES[`desk:${slug}`] = point
 for (const place of PLACES) NODES[`place:${place.id}`] = place.point
 
 const LINKS: Array<[string, string]> = [
-  ['desk:alex', 'aAlex'],
-  ['desk:sage', 'aSage'],
-  ['desk:dev', 'aDev'],
-  ['desk:mechanicus', 'sMech'],
-  ['desk:tech', 'sTech'],
-  ['desk:gia', 'sGia'],
-  ['desk:marj', 'vpDoor'],
-  ['desk:jv', 'officeDoor'],
-  ['westN', 'aAlex'],
-  ['aAlex', 'v1n'],
-  ['v1n', 'aSage'],
-  ['aSage', 'v2n'],
-  ['v2n', 'aDev'],
-  ['aDev', 'spineN'],
-  ['spineN', 'vpDoor'],
-  ['vpDoor', 'officeDoor'],
-  ['officeDoor', 'eastN'],
-  ['vLib', 'westN'],
-  ['vLib', 'libDoor'],
-  ['libDoor', 'libHub'],
-  ['vPan', 'westN'],
-  ['vPan', 'panDoor'],
-  ['panDoor', 'panHub'],
-  ['vPan', 'vWestS'],
-  ['v1n', 'v1s'],
-  ['v2n', 'v2s'],
-  ['spineN', 'spineS'],
-  ['corLounge', 'vWestS'],
-  ['vWestS', 'sMech'],
-  ['sMech', 'hall'],
-  ['hall', 'v1s'],
-  ['v1s', 'sTech'],
-  ['sTech', 'v2s'],
-  ['v2s', 'sGia'],
-  ['sGia', 'spineS'],
-  ['spineS', 'gymDoor'],
-  ['gymDoor', 'confDoor'],
-  ['corLounge', 'loungeHub'],
-  ['loungeHub', 'loungeWest'],
-  ['v2s', 'restHub'],
-  ['restHub', 'restSide'],
-  ['gymDoor', 'gymHub'],
-  ['confDoor', 'confJv'],
-  ['confDoor', 'confMarj'],
-  ['hall', 'hallMid'],
-  ['hallMid', 'hallSouth'],
-  ['hallSouth', 'exitDoor'],
+  ['desk:alex', 'cAlex'],
+  ['desk:sage', 'cSage'],
+  ['desk:dev', 'cDev'],
+  ['desk:mechanicus', 'sAlex'],
+  ['desk:tech', 'sSage'],
+  ['desk:gia', 'sDev'],
+  ['desk:jv', 'jvDoor'],
+  ['desk:marj', 'marjDoor'],
+  ['jvDoor', 'cAlex'],
+  ['marjDoor', 'cMarj'],
+  ['cWest', 'cAlex'],
+  ['cAlex', 'cSage'],
+  ['cSage', 'cDev'],
+  ['cDev', 'cMarj'],
+  ['cMarj', 'cEdge'],
+  ['cEdge', 'cKit'],
+  ['cKit', 'cMeet'],
+  ['cWest', 'sWest'],
+  ['sWest', 'sAlex'],
+  ['sAlex', 'sSage'],
+  ['sSage', 'sDev'],
+  ['sDev', 'sEdge'],
+  ['cEdge', 'sEdge'],
+  ['kitDoor', 'cKit'],
+  ['kitDoor', 'kitHub'],
+  ['cMeet', 'meetDoor'],
+  ['meetDoor', 'confJv'],
+  ['meetDoor', 'confMarj'],
+  ['sEdge', 'loungeHub'],
+  ['cEdge', 'nookHub'],
+  ['nookHub', 'loungeHub'],
+  ['loungeHub', 'entry'],
+  ['entry', 'exitDoor'],
   ['exitDoor', 'away'],
   ['exitDoor', 'awayJv'],
   ['exitDoor', 'awayMarj'],
@@ -251,21 +218,11 @@ const LINKS: Array<[string, string]> = [
 
 const HUB: Record<IdleRoom, string> = {
   lounge: 'loungeHub',
-  rest: 'restHub',
-  library: 'libHub',
-  pantry: 'panHub',
-  gym: 'gymHub',
+  nook: 'nookHub',
+  pantry: 'kitHub',
 }
 
-for (const place of PLACES) {
-  const around =
-    place.room === 'lounge' && place.point.y > 15.5
-      ? 'loungeWest'
-      : place.room === 'rest' && place.point.y > 15.5
-        ? 'restSide'
-        : HUB[place.room]
-  LINKS.push([around, `place:${place.id}`])
-}
+for (const place of PLACES) LINKS.push([HUB[place.room], `place:${place.id}`])
 
 const GRAPH: Record<string, string[]> = {}
 for (const [a, b] of LINKS) {
@@ -279,11 +236,12 @@ export function idlePlaces(): readonly IdlePlace[] {
   return PLACES
 }
 
+const ROOM_HIT_ORDER: RoomId[] = ['nook', 'office', 'vp', 'pantry', 'storage', 'restroom', 'conference', 'work', 'lounge']
+
 export function roomOf(point: Vec): RoomId | null {
-  for (const [id, room] of Object.entries(ROOMS) as Array<[RoomId, (typeof ROOMS)[RoomId]]>) {
-    if (point.x >= room.x && point.x < room.x + room.w && point.y >= room.y && point.y < room.y + room.h) {
-      return id
-    }
+  for (const id of ROOM_HIT_ORDER) {
+    const room = ROOMS[id]
+    if (point.x >= room.x && point.x < room.x + room.w && point.y >= room.y && point.y < room.y + room.h) return id
   }
   return null
 }
@@ -298,9 +256,9 @@ export function project(x: number, y: number): Vec {
 export function floorViewBox(): string {
   const pts = [
     project(0, 0),
-    project(FLOOR.cols, 0),
-    project(0, FLOOR.rows),
-    project(FLOOR.cols, FLOOR.rows),
+    project(FLOOR.width, 0),
+    project(0, FLOOR.depth),
+    project(FLOOR.width, FLOOR.depth),
     project(NODES.awayJv!.x, NODES.awayJv!.y),
     project(NODES.awayMarj!.x, NODES.awayMarj!.y),
   ]
@@ -422,6 +380,7 @@ export function buildFloorLabels(
   agents: Array<{ slug: string; name: string; isBoss: boolean }>,
   personAt: Record<string, Vec | null>,
   selected: string | null,
+  toScreen: (point: Vec) => Vec = (point) => project(point.x, point.y),
 ): LabelSpec[] {
   const specs: LabelSpec[] = []
   for (const agent of agents) {
@@ -430,7 +389,7 @@ export function buildFloorLabels(
     const expanded = selected === agent.slug
     const title = floorTitle(agent)
     if (person) {
-      const screen = project(person.x, person.y)
+      const screen = toScreen(person)
       const size = labelSize(title, expanded)
       const stagger = agent.slug.length % 2 === 0 ? 12 : -12
       specs.push({
@@ -445,7 +404,7 @@ export function buildFloorLabels(
       })
     }
     if (showDeskLabel(person, desk)) {
-      const screen = project(desk.x, desk.y - 1.85)
+      const screen = toScreen(desk)
       const size = labelSize(title, false)
       specs.push({
         id: `desk:${agent.slug}`,
@@ -697,9 +656,7 @@ export function advancePose(pose: Pose, dt: number, reducedMotion: boolean): Pos
 }
 
 function bodyForPlace(place: IdlePlace): BodyPose {
-  if (place.pose === 'treadmill') return 'treadmill'
-  if (place.pose === 'sit') return 'sit'
-  return 'stand'
+  return place.pose === 'sit' ? 'sit' : 'stand'
 }
 
 function evolvePose(pose: Pose, agent: FloorAgent, dt: number): { pose: Pose; paint: boolean } {
@@ -789,7 +746,7 @@ export function dwellFor(slug: string, beat: number): number {
   const rng = mulberry32((hashSlug(slug) + Math.max(0, beat) * 131 + 17) >>> 0)
   if (beat <= 0) return Math.round((1.5 + rng() * 1.1) * 10) / 10
   const pose = wanderBeat(slug, beat).pose
-  const base = pose === 'sit' ? 6.2 : pose === 'treadmill' ? 5.4 : 4.6
+  const base = pose === 'sit' ? 6.2 : 4.6
   return Math.round((base + rng() * 3.2) * 10) / 10
 }
 
@@ -819,7 +776,7 @@ function beatTable(beat: number): Map<string, IdlePlace> {
 }
 
 function chooseNext(slug: string, beat: number, previous: IdlePlace, taken: Set<string>): IdlePlace {
-  const bias = BIAS[slug] ?? ['rest', 'library', 'gym', 'pantry', 'lounge']
+  const bias = BIAS[slug] ?? ['pantry', 'nook', 'lounge']
   const rng = mulberry32((hashSlug(slug) + beat * 997) >>> 0)
   let pool: IdlePlace[] = []
   for (let step = 0; step < bias.length && pool.length === 0; step += 1) {

@@ -12,7 +12,7 @@ import { previewIsMock, readLiveConfig } from './data/mode.ts'
 import { isExecutive } from './data/shift.ts'
 import { createOfficeStore, type OfficeStore } from './data/store.ts'
 import { OfficeFloor } from './floor/OfficeFloor.tsx'
-import { toFloorAgents } from './floor/motion.ts'
+import { toFloorAgents, type FloorAgent } from './floor/motion.ts'
 
 function useNow(): number {
   const [now, setNow] = useState(() => Date.now())
@@ -21,6 +21,15 @@ function useNow(): number {
     return () => window.clearInterval(timer)
   }, [])
   return now
+}
+
+function presentForShot(agents: FloorAgent[]): FloorAgent[] {
+  if (typeof window === 'undefined') return agents
+  const params = new URLSearchParams(window.location.search)
+  if (params.get('mock') !== '1' || params.get('shot') !== 'meeting') return agents
+  return agents.map((agent) =>
+    agent.slug === 'jv' || agent.slug === 'marj' ? { ...agent, status: 'in_meeting' } : agent,
+  )
 }
 
 function createSource() {
@@ -49,7 +58,7 @@ export function App() {
   }, [])
   const snapshot = useSyncExternalStore(store.subscribe, store.getState, store.getState)
   const now = useNow()
-  const floorAgents = toFloorAgents(snapshot, new Date(now))
+  const floorAgents = presentForShot(toFloorAgents(snapshot, new Date(now)))
   const selected = snapshot.agents.find((agent) => agent.slug === selectedSlug) ?? null
   const pending = snapshot.approvals.filter((item) => item.status === 'pending').length
 

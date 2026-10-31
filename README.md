@@ -157,7 +157,7 @@ Zones come from the effective status:
 | Who | Status | Where |
 | --- | --- | --- |
 | Staff | `working`, `waiting_on_jv` | Their desk. Waiting shows a gold badge. |
-| Staff | `idle` | Wandering the lounge, rest room, library, pantry, and gym. Reduced motion keeps them in a seat. |
+| Staff | `idle` | Wandering the lounge, reading nook, and kitchenette. Reduced motion keeps them in a seat. |
 | Staff | `offline` | Hidden. The desk stays, dimmed. |
 | JV | `online` | Corner office |
 | Marj | `online` | VP office |
@@ -168,7 +168,9 @@ Humans are `is_human`, ordered by `floor_rank` (JV 1, Marj 2, then the bots). A 
 
 ## Art and licences
 
-The office (rooms, furniture, plants, and figures) is original SVG drawn for this project. No sprite pack and no game engine. People are stylised humans. Furniture is drawn as desks, chairs, sofas, shelves, and gym equipment rather than solid boxes.
+The office is an original Three.js scene (procedural geometry and materials, no downloaded models and no paid assets). `@react-three/fiber` and `@react-three/drei` load in a separate chunk. People are stylised 3D figures. Drag to orbit, scroll or pinch to zoom, and use Reset view to return to the default camera. If WebGL is unavailable the page explains that and the side board still works.
+
+The plan follows a real office: JV’s corner office and Marj’s VP office on the north wall, a kitchenette, storage, a restroom, a meeting room, back-to-back work pods, and a lounge with a curved reception desk. A reading nook sits in the lounge. A separate gym and library were left out so the plan could stay close to that reference.
 
 The Create & Reach mark in `public/` is the official logo supplied by the client. `cnr-logo.png` is a 512px export, `cnr-logo-128.png` is the header size, `favicon-32.png` is the 32px icon, and `apple-touch-icon.png` is 180px. They are brand assets, not an open-source icon set.
 

@@ -993,6 +993,98 @@ p {
   padding: 0;
 }
 
+.office-stage {
+  position: relative;
+  height: min(78vh, 860px);
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #100c14;
+}
+
+.office-canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+  background: #100c14;
+}
+
+.floor-fallback {
+  margin: 0;
+  padding: 28px 22px;
+  color: var(--muted);
+}
+
+.floor-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 10px;
+}
+
+.floor-roster {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+button.floor-chip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: none;
+  align-content: center;
+  gap: 2px 6px;
+  padding: 1px 8px 1px 6px;
+  border: 1px solid rgba(254, 189, 99, 0.55);
+  border-radius: 8px;
+  background: rgba(8, 6, 12, 0.92);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+button.floor-chip .tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+button.floor-chip .tag-dot[data-status='waiting_on_jv'] {
+  background: var(--gold);
+}
+
+button.floor-chip .tag-dot[data-status='in_meeting'] {
+  background: var(--pink);
+}
+
+button.floor-chip .label-detail {
+  display: none;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+button.floor-chip:hover .label-detail,
+button.floor-chip.is-open .label-detail {
+  display: block;
+}
+
 .office-scroll {
   overflow: auto;
   max-height: calc(100vh - 148px);
