@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from 'react'
 import { brand } from '../brand.tsx'
 import { STATUS_LABEL } from '../data/labels.ts'
-import { Figure, NameTag, Plant, Prism, Wall, agentColor } from './draw.tsx'
+import { Figure, FloorChip, Plant, Prism, Wall, agentColor } from './draw.tsx'
 import {
   AWAY,
   EXIT,
@@ -9,9 +9,11 @@ import {
   ROOMS,
   advancePose,
   bubbleText,
+  buildFloorLabels,
   deskPoint,
   floorViewBox,
   isWaiting,
+  placeLabels,
   poly,
   poseView,
   project,
@@ -71,17 +73,22 @@ export function OfficeFloor({ agents, selectedSlug = null, onSelect, poses: pose
   }
 
   sprites.push(
-    { key: 'sofa-a', depth: 0.5 + 13.45 + 2.2, node: <Sofa key="sa" x={0.5} y={13.45} /> },
-    { key: 'sofa-b', depth: 4.15 + 13.45 + 2.2, node: <Sofa key="sb" x={4.15} y={13.45} /> },
-    { key: 'coffee', depth: 2.35 + 11.7 + 2.4, node: <CoffeeTable key="ct" /> },
-    { key: 'conf-table', depth: 13.75 + 9.85 + 3.6, node: <ConferenceTable key="conf" /> },
-    { key: 'plant-a', depth: 0.6 + 14.3, node: <Plant key="pa" x={0.6} y={14.3} /> },
-    { key: 'plant-b', depth: 6.35 + 14.15, node: <Plant key="pb" x={6.35} y={14.15} scale={0.9} /> },
-    { key: 'plant-c', depth: 16.85 + 1.05, node: <Plant key="pc" x={16.85} y={1.05} scale={0.85} /> },
-    { key: 'plant-d', depth: 16.7 + 13.3, node: <Plant key="pd" x={16.7} y={13.3} scale={0.8} /> },
-    { key: 'lamp', depth: 0.65 + 10.7, node: <FloorLamp key="lamp" x={0.65} y={10.7} /> },
-    { key: 'post-office', depth: 17.55 + 4.4, node: <Post key="po" x={17.45} y={4.25} /> },
-    { key: 'post-conf', depth: 17.6 + 13.75, node: <Post key="pcn" x={17.5} y={13.7} /> },
+    { key: 'shelf-west', depth: 0.4 + 7.4, node: <Bookcase key="shw" x={0.28} y={4.85} /> },
+    { key: 'shelf-office', depth: 16.2 + 3.6, node: <Bookcase key="sho" x={16.15} y={3.15} /> },
+    { key: 'sofa-a', depth: 0.45 + 13.55 + 2.2, node: <Sofa key="sa" x={0.45} y={13.55} /> },
+    { key: 'sofa-b', depth: 4.05 + 13.55 + 2.2, node: <Sofa key="sb" x={4.05} y={13.55} /> },
+    { key: 'coffee-bar', depth: 0.4 + 11.3, node: <CoffeeBar key="bar" /> },
+    { key: 'coffee', depth: 2.35 + 12.15 + 2.4, node: <CoffeeTable key="ct" /> },
+    { key: 'conf-table', depth: 13.55 + 9.7 + 3.8, node: <ConferenceTable key="conf" /> },
+    { key: 'plant-a', depth: 0.55 + 14.35, node: <Plant key="pa" x={0.55} y={14.35} /> },
+    { key: 'plant-b', depth: 6.45 + 14.2, node: <Plant key="pb" x={6.45} y={14.2} scale={0.9} /> },
+    { key: 'plant-c', depth: 16.9 + 0.85, node: <Plant key="pc" x={16.9} y={0.85} scale={0.85} /> },
+    { key: 'plant-d', depth: 16.55 + 13.45, node: <Plant key="pd" x={16.55} y={13.45} scale={0.8} /> },
+    { key: 'plant-e', depth: 11.15 + 6.4, node: <Plant key="pe" x={11.15} y={6.4} scale={0.75} /> },
+    { key: 'plant-f', depth: 0.7 + 1.15, node: <Plant key="pf" x={0.7} y={1.15} scale={0.8} /> },
+    { key: 'lamp', depth: 0.6 + 10.55, node: <FloorLamp key="lamp" x={0.6} y={10.55} /> },
+    { key: 'post-office', depth: 17.55 + 4.35, node: <Post key="po" x={17.45} y={4.22} /> },
+    { key: 'post-conf', depth: 17.55 + 13.7, node: <Post key="pcn" x={17.45} y={13.65} /> },
   )
 
   for (const agent of agents) {
@@ -108,6 +115,14 @@ export function OfficeFloor({ agents, selectedSlug = null, onSelect, poses: pose
 
   sprites.sort((a, b) => a.depth - b.depth)
 
+  const personAt: Record<string, Vec | null> = {}
+  for (const agent of agents) {
+    const pose = poseBySlug.get(agent.slug)
+    const view = pose ? poseView(pose) : null
+    personAt[agent.slug] = view ? { x: view.x, y: view.y } : null
+  }
+  const labels = placeLabels(buildFloorLabels(agents, personAt, selectedSlug))
+
   return (
     <div className="office-shell panel" data-testid="office-floor">
       <div className="office-scroll" ref={scrollRef}>
@@ -119,11 +134,34 @@ export function OfficeFloor({ agents, selectedSlug = null, onSelect, poses: pose
           <polygon points={tilePoints(ROOMS.lounge.x, ROOMS.lounge.y, ROOMS.lounge.w, ROOMS.lounge.h)} className="rug" />
           <polygon points={tilePoints(ROOMS.office.x + 0.15, ROOMS.office.y + 0.15, ROOMS.office.w - 0.3, ROOMS.office.h - 0.3)} className="office-rug" />
           <Walls />
+          <NeonRim />
           <GlassRooms />
           {sprites.map((sprite) => (
             <g key={sprite.key}>{sprite.node}</g>
           ))}
           <ZoneTitles />
+          <g className="floor-labels">
+            {labels.map((label) => {
+              const agent = agents.find((item) => item.slug === label.slug)
+              if (!agent) return null
+              return (
+                <FloorChip
+                  key={label.id}
+                  x={label.x}
+                  y={label.y}
+                  w={label.w}
+                  h={label.h}
+                  name={agent.name}
+                  role={shortRole(agent.slug, agent.role)}
+                  task={bubbleText(agent)}
+                  status={agent.status}
+                  expanded={selectedSlug === agent.slug && label.kind === 'person'}
+                  kind={label.kind}
+                  slug={agent.slug}
+                />
+              )
+            })}
+          </g>
         </svg>
       </div>
       <p className="pan-hint">Swipe to look around the floor.</p>
@@ -217,9 +255,7 @@ function Desk({
   const deep = agent.isBoss ? 1.0 : 0.82
   const x = feet.x - wide / 2
   const y = feet.y - (agent.isBoss ? 2.35 : 2.15)
-  const plate = project(feet.x, y + 0.35)
   const offline = occupancy === 'empty'
-  const atDesk = occupancy === 'here'
   return (
     <g
       className={offline ? 'desk is-offline' : selected ? 'desk is-selected' : 'desk'}
@@ -229,21 +265,11 @@ function Desk({
     >
       <Prism x={x} y={y} w={wide} d={deep} h={agent.isBoss ? 18 : 15} top={agent.isBoss ? '#342838' : '#2a2433'} south="#1a1522" east="#241c2e" />
       <polygon points={tilePoints(x, y, wide, deep)} fill="none" stroke={color} strokeWidth="1.4" opacity="0.85" transform={`translate(0 ${agent.isBoss ? -18 : -15})`} />
-      <Monitor feet={feet} color={color} />
-      <Chair feet={feet} />
-      {selected ? <polygon points={tilePoints(x - 0.15, y - 0.1, 1.85, 2.15)} className="select-ring" /> : null}
-      <text x={plate.x} y={plate.y - 20} textAnchor="middle" className="desk-plate-name">
-        {agent.name}
-        {isWaiting(agent) ? '  !' : ''}
-      </text>
-      <text x={plate.x} y={plate.y - 8} textAnchor="middle" className="desk-plate-role">
-        {shortRole(agent.slug, agent.role)}
-      </text>
-      {atDesk ? (
-        <text x={plate.x} y={plate.y + 4} textAnchor="middle" className={isWaiting(agent) ? 'desk-plate-task is-waiting' : 'desk-plate-task'}>
-          {bubbleText(agent)}
-        </text>
-      ) : null}
+      <Monitor feet={feet} color={color} boss={agent.isBoss} />
+      <Keyboard feet={feet} />
+      <Tower feet={feet} color={color} />
+      <Chair feet={feet} boss={agent.isBoss} />
+      {selected ? <polygon points={tilePoints(x - 0.15, y - 0.1, wide + 0.3, 2.3)} className="select-ring" /> : null}
       <polygon
         points={tilePoints(x - 0.1, y - 0.05, 1.8, 2.05)}
         className="iso-hit"
@@ -257,19 +283,39 @@ function Desk({
   )
 }
 
-function Monitor({ feet, color }: { feet: Vec; color: string }) {
-  const p = project(feet.x, feet.y - 1.9)
+function Monitor({ feet, color, boss }: { feet: Vec; color: string; boss: boolean }) {
+  const p = project(feet.x, feet.y - (boss ? 2.05 : 1.85))
+  const w = boss ? 30 : 22
   return (
-    <g transform={`translate(${p.x} ${p.y - 16})`}>
-      <rect x="-12" y="-22" width="24" height="16" rx="2" fill="#0c0a10" stroke={color} strokeWidth="1.2" />
-      <rect x="-9" y="-19" width="18" height="10" rx="1" fill={color} className="screen-glow" opacity="0.9" />
-      <rect x="-2" y="-6" width="4" height="6" fill="#2a2433" />
+    <g transform={`translate(${p.x} ${p.y - (boss ? 20 : 16)})`}>
+      <rect x={-w / 2} y="-24" width={w} height={boss ? 18 : 15} rx="2" fill="#0c0a10" stroke={color} strokeWidth="1.3" />
+      <rect x={-w / 2 + 3} y="-21" width={w - 6} height={boss ? 12 : 9} rx="1" fill={color} className="screen-glow" opacity="0.92" />
+      <rect x="-2.5" y="-6" width="5" height="7" fill="#2a2433" />
     </g>
   )
 }
 
-function Chair({ feet }: { feet: Vec }) {
-  return <Prism x={feet.x - 0.28} y={feet.y - 0.42} w={0.56} d={0.48} h={8} top="#3a3144" south="#241c2c" east="#2e2638" />
+function Keyboard({ feet }: { feet: Vec }) {
+  return <Prism x={feet.x - 0.28} y={feet.y - 1.15} w={0.56} d={0.28} h={3} top="#3a3344" south="#221c28" east="#2c2634" />
+}
+
+function Tower({ feet, color }: { feet: Vec; color: string }) {
+  return (
+    <g>
+      <Prism x={feet.x + 0.55} y={feet.y - 1.7} w={0.28} d={0.28} h={16} top="#2a2432" south="#16121c" east="#221c28" />
+      <circle cx={project(feet.x + 0.7, feet.y - 1.55).x} cy={project(feet.x + 0.7, feet.y - 1.55).y - 10} r="1.6" fill={color} className="screen-glow" />
+    </g>
+  )
+}
+
+function Chair({ feet, boss }: { feet: Vec; boss: boolean }) {
+  const w = boss ? 0.72 : 0.58
+  return (
+    <g>
+      <Prism x={feet.x - w / 2} y={feet.y - 0.15} w={w} d={boss ? 0.55 : 0.46} h={boss ? 11 : 8} top={boss ? '#4a3040' : '#3a3144'} south="#241c2c" east="#2e2638" />
+      <Prism x={feet.x - w / 2 + 0.06} y={feet.y - 0.02} w={w - 0.12} d={0.12} h={boss ? 22 : 16} top="#2a2230" south="#1a1520" east="#221c28" />
+    </g>
+  )
 }
 
 function Sofa({ x, y }: { x: number; y: number }) {
@@ -284,9 +330,33 @@ function Sofa({ x, y }: { x: number; y: number }) {
 function CoffeeTable() {
   return (
     <g>
-      <Prism x={2.3} y={11.55} w={1.7} d={0.9} h={10} top="#3a2e28" south="#241910" east="#2e2218" />
-      <Cup x={2.65} y={11.8} />
-      <Cup x={3.3} y={11.95} />
+      <Prism x={2.25} y={12.05} w={1.85} d={0.95} h={11} top="#3a2e28" south="#241910" east="#2e2218" />
+      <Cup x={2.6} y={12.3} />
+      <Cup x={3.35} y={12.45} />
+    </g>
+  )
+}
+
+function CoffeeBar() {
+  return (
+    <g>
+      <Prism x={0.4} y={10.45} w={2.5} d={0.72} h={16} top="#2c2420" south="#1a1412" east="#241c18" />
+      <Prism x={0.7} y={10.55} w={0.45} d={0.4} h={24} top="#3a241c" south="#24140e" east="#2e1c14" />
+      <Cup x={1.7} y={10.7} />
+      <Cup x={2.15} y={10.78} />
+      <Prism x={0.55} y={11.25} w={0.38} d={0.38} h={10} top="#3a3144" south="#241c2c" east="#2a2430" />
+      <Prism x={2.15} y={11.3} w={0.38} d={0.38} h={10} top="#3a3144" south="#241c2c" east="#2a2430" />
+    </g>
+  )
+}
+
+function Bookcase({ x, y }: { x: number; y: number }) {
+  return (
+    <g>
+      <Prism x={x} y={y} w={0.55} d={1.7} h={28} top="#3a2a24" south="#241810" east="#2e2218" />
+      <Prism x={x + 0.08} y={y + 0.15} w={0.36} d={0.4} h={34} top={brand.colors.pink} south="#8a2040" east="#a02848" />
+      <Prism x={x + 0.08} y={y + 0.65} w={0.36} d={0.45} h={32} top={brand.colors.gold} south="#8a6420" east="#a07828" />
+      <Prism x={x + 0.08} y={y + 1.15} w={0.36} d={0.35} h={30} top={brand.colors.orange} south="#8a4e10" east="#a06018" />
     </g>
   )
 }
@@ -304,21 +374,23 @@ function Cup({ x, y }: { x: number; y: number }) {
 function ConferenceTable() {
   return (
     <g>
-      <Prism x={13.7} y={9.75} w={2.45} d={1.2} h={14} top="#241c30" south="#16121e" east="#1e1828" />
+      <Prism x={13.55} y={9.55} w={2.7} d={1.45} h={15} top="#241c30" south="#16121e" east="#1e1828" />
       <polygon
-        points={tilePoints(13.7, 9.75, 2.45, 1.2)}
+        points={tilePoints(13.55, 9.55, 2.7, 1.45)}
         fill="none"
         stroke={brand.colors.pink}
-        strokeWidth="1.5"
-        opacity="0.85"
-        transform="translate(0 -14)"
+        strokeWidth="1.6"
+        opacity="0.9"
+        transform="translate(0 -15)"
       />
-      {[0, 1, 2].map((i) => (
-        <Prism key={`n${i}`} x={14.05 + i * 0.68} y={9.42} w={0.4} d={0.3} h={7} top="#3a3144" south="#241c2c" east="#2e2638" />
+      {[0, 1, 2, 3].map((i) => (
+        <Prism key={`n${i}`} x={13.85 + i * 0.58} y={9.22} w={0.4} d={0.28} h={8} top="#3a3144" south="#241c2c" east="#2e2638" />
       ))}
-      {[0, 1, 2].map((i) => (
-        <Prism key={`s${i}`} x={14.1 + i * 0.68} y={11.02} w={0.4} d={0.3} h={7} top="#3a3144" south="#241c2c" east="#2e2638" />
+      {[0, 1, 2, 3].map((i) => (
+        <Prism key={`s${i}`} x={13.9 + i * 0.58} y={11.08} w={0.4} d={0.28} h={8} top="#3a3144" south="#241c2c" east="#2e2638" />
       ))}
+      <Prism x={13.28} y={9.95} w={0.28} d={0.42} h={8} top="#3a3144" south="#241c2c" east="#2e2638" />
+      <Prism x={16.28} y={10.05} w={0.28} d={0.42} h={8} top="#3a3144" south="#241c2c" east="#2e2638" />
     </g>
   )
 }
@@ -373,22 +445,11 @@ function Character({
     >
       {selected ? <ellipse cx="0" cy="2" rx="18" ry="8" className="select-pool" /> : null}
       {waiting ? <ellipse cx="0" cy="2" rx="16" ry="7" className="wait-pool" /> : null}
-        <g transform={view.left ? 'scale(-0.84 0.84)' : 'scale(0.84)'}>
-        <g className={view.walking ? 'bob' : undefined}>
-          <Figure slug={agent.slug} color={color} />
+        <g transform={view.left ? `scale(${agent.isBoss ? -1.28 : -1.05} ${agent.isBoss ? 1.28 : 1.05})` : `scale(${agent.isBoss ? 1.28 : 1.05})`}>
+          <g className={view.walking ? 'bob' : undefined}>
+            <Figure slug={agent.slug} color={color} />
+          </g>
         </g>
-      </g>
-      {waiting ? (
-        <g className="wait-badge" transform="translate(14 -46)">
-          <circle r="9" />
-          <text y="4" textAnchor="middle">
-            !
-          </text>
-        </g>
-      ) : null}
-      {zoneFor(agent) === 'desk' ? null : (
-        <NameTag x={0} y={0} name={agent.name} text={bubbleText(agent)} waiting={waiting} status={agent.status} />
-      )}
     </g>
   )
 }
@@ -483,8 +544,8 @@ function Walls() {
   const { cols, rows } = FLOOR
   return (
     <g className="walls">
-      <Wall x0={0} y0={0} x1={cols} y1={0} h={96} fill="#14111a" lip={brand.colors.gold} />
-      <Wall x0={0} y0={0} x1={0} y1={rows} h={96} fill="#1c1722" lip={brand.colors.pink} />
+      <Wall x0={0} y0={0} x1={cols} y1={0} h={78} fill="#14111a" lip={brand.colors.gold} />
+      <Wall x0={0} y0={0} x1={0} y1={rows} h={78} fill="#1c1722" lip={brand.colors.pink} />
       <Window />
       <Wall x0={0} y0={rows} x1={7} y1={rows} h={28} fill="#14111a" lip={brand.colors.pink} />
       <Wall x0={11} y0={rows} x1={cols} y1={rows} h={28} fill="#14111a" lip={brand.colors.pink} />
@@ -495,10 +556,11 @@ function Walls() {
 }
 
 function Window() {
-  const a = project(3.2, 0)
-  const b = project(10.4, 0)
-  const h1 = 78
-  const h2 = 30
+  const a = project(4.2, 0)
+  const b = project(11.2, 0)
+  const h1 = 64
+  const h2 = 26
+  const logo = project(1.15, 0.05)
   return (
     <g className="skyline">
       <polygon
@@ -509,22 +571,37 @@ function Window() {
           { x: a.x, y: a.y - h2 },
         ])}
         fill={brand.colors.pink}
-        opacity="0.28"
+        opacity="0.32"
       />
       <polygon
         points={poly([
           { x: a.x, y: a.y - h1 },
           { x: b.x, y: b.y - h1 },
-          { x: b.x, y: b.y - 52 },
-          { x: a.x, y: a.y - 52 },
+          { x: b.x, y: b.y - 44 },
+          { x: a.x, y: a.y - 44 },
         ])}
         fill={brand.colors.orange}
-        opacity="0.22"
+        opacity="0.24"
       />
-      <text x={(a.x + b.x) / 2} y={a.y - 86} textAnchor="middle" className="wall-sign">
+      <image href={brand.logo.small} x={logo.x - 16} y={logo.y - 62} width="34" height="34" />
+      <text x={logo.x + 46} y={logo.y - 40} className="wall-sign">
         CREATE & REACH
       </text>
     </g>
+  )
+}
+
+function NeonRim() {
+  return (
+    <polygon
+      className="neon-rim"
+      points={poly([
+        project(0, 0),
+        project(FLOOR.cols, 0),
+        project(FLOOR.cols, FLOOR.rows),
+        project(0, FLOOR.rows),
+      ])}
+    />
   )
 }
 
@@ -589,18 +666,18 @@ function Glass({ x0, y0, x1, y1 }: { x0: number; y0: number; x1: number; y1: num
 }
 
 function ZoneTitles() {
-  const office = project(ROOMS.office.x + 2.4, ROOMS.office.y + 0.35)
-  const lounge = project(ROOMS.lounge.x + 1.2, ROOMS.lounge.y + 0.15)
-  const conf = project(ROOMS.conference.x + 2.2, ROOMS.conference.y + 0.2)
+  const office = project(13.15, 0.28)
+  const lounge = project(1.55, 10.55)
+  const conf = project(14.9, 10.15)
   return (
     <g className="zone-titles" aria-hidden="true">
-      <text x={office.x} y={office.y - 8} textAnchor="middle">
+      <text x={office.x} y={office.y - 58} textAnchor="middle">
         CORNER OFFICE
       </text>
-      <text x={lounge.x} y={lounge.y - 4} textAnchor="middle">
+      <text x={lounge.x} y={lounge.y - 22} textAnchor="middle">
         LOUNGE
       </text>
-      <text x={conf.x} y={conf.y - 4} textAnchor="middle">
+      <text x={conf.x} y={conf.y - 18} textAnchor="middle">
         CONFERENCE
       </text>
     </g>

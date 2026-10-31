@@ -7,7 +7,10 @@ import { OfficeFloor } from '../src/floor/OfficeFloor.tsx'
 import {
   WALK_SPEED,
   advancePose,
+  buildFloorLabels,
+  labelsOverlap,
   pathLength,
+  placeLabels,
   placementFor,
   poseView,
   retarget,
@@ -99,6 +102,42 @@ describe('walking', () => {
   })
 })
 
+describe('label layout', () => {
+  const agents = toFloorAgents(buildDemoSnapshot(at), at)
+
+  function personAt() {
+    const map: Record<string, { x: number; y: number } | null> = {}
+    for (const agent of agents) {
+      map[agent.slug] = placementFor(agent).point
+    }
+    return map
+  }
+
+  it('omits the desk name while that person is standing there', () => {
+    const specs = buildFloorLabels(agents, personAt(), null)
+    const ids = specs.map((spec) => spec.id)
+    expect(ids).toContain('person:alex')
+    expect(ids).not.toContain('desk:alex')
+    expect(ids).toContain('desk:tech')
+    expect(ids).not.toContain('person:tech')
+    expect(ids).toContain('person:sage')
+    expect(ids).toContain('desk:sage')
+    expect(ids).toContain('person:jv')
+    expect(ids).not.toContain('desk:jv')
+  })
+
+  it('keeps every chip from covering another', () => {
+    const placed = placeLabels(buildFloorLabels(agents, personAt(), 'alex'))
+    for (let i = 0; i < placed.length; i += 1) {
+      for (let j = i + 1; j < placed.length; j += 1) {
+        expect(labelsOverlap(placed[i]!, placed[j]!), `${placed[i]!.id} overlaps ${placed[j]!.id}`).toBe(false)
+      }
+    }
+    const alex = placed.find((label) => label.id === 'person:alex')
+    expect(alex?.h).toBeGreaterThan(18)
+  })
+})
+
 describe('floor rendering', () => {
   const agents = toFloorAgents(buildDemoSnapshot(at), at)
 
@@ -113,6 +152,12 @@ describe('floor rendering', () => {
     expect(html).toContain('CORNER OFFICE')
     expect(html).toContain('LOUNGE')
     expect(html).toContain('CONFERENCE')
+    expect(html).toContain('data-floor-label="person:alex"')
+    expect(html).not.toContain('data-floor-label="desk:alex"')
+    expect(html).toContain('data-floor-label="desk:tech"')
+    expect(html).not.toContain('data-floor-label="person:tech"')
+    expect(html).toContain('data-floor-label="person:sage"')
+    expect(html).toContain('data-floor-label="desk:sage"')
     expect(html).toContain('Executive assistant')
     expect(html).toContain('Weekly client handoff is ready for review')
     expect(html).not.toContain('data-character="tech"')

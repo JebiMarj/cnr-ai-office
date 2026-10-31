@@ -168,10 +168,10 @@ export function floorViewBox(): string {
   ]
   const xs = pts.map((p) => p.x)
   const ys = pts.map((p) => p.y)
-  const minX = Math.min(...xs) - 56
-  const maxX = Math.max(...xs) + 64
-  const minY = Math.min(...ys) - 128
-  const maxY = Math.max(...ys) + 64
+  const minX = Math.min(...xs) - 18
+  const maxX = Math.max(...xs) + 18
+  const minY = Math.min(...ys) - 86
+  const maxY = Math.max(...ys) + 22
   return `${minX} ${minY} ${maxX - minX} ${maxY - minY}`
 }
 
@@ -233,6 +233,106 @@ export function bubbleText(agent: FloorAgent): string {
 
 function clip(text: string): string {
   return text.length > 28 ? `${text.slice(0, 26)}…` : text
+}
+
+export type LabelKind = 'person' | 'desk'
+
+export type LabelSpec = {
+  id: string
+  kind: LabelKind
+  slug: string
+  anchorX: number
+  anchorY: number
+  w: number
+  h: number
+  lift: number
+}
+
+export type PlacedLabel = LabelSpec & { x: number; y: number }
+
+const NEAR_DESK = 1.45
+
+export function labelSize(name: string, expanded: boolean): { w: number; h: number } {
+  const compact = Math.max(56, Math.min(108, name.length * 7.2 + 22))
+  if (!expanded) return { w: compact, h: 18 }
+  return { w: Math.max(compact, 138), h: 46 }
+}
+
+/** A desk name is drawn only when that person is not standing on the desk. */
+export function showDeskLabel(person: Vec | null, desk: Vec): boolean {
+  if (!person) return true
+  return dist(person, desk) >= NEAR_DESK
+}
+
+export function labelsOverlap(
+  a: { x: number; y: number; w: number; h: number },
+  b: { x: number; y: number; w: number; h: number },
+  gap = 6,
+): boolean {
+  return a.x < b.x + b.w + gap && a.x + a.w + gap > b.x && a.y < b.y + b.h + gap && a.y + a.h + gap > b.y
+}
+
+/**
+ * Compact chips sit above their anchor. If two would share the same pixels,
+ * the later one steps upward, then sideways, until the boxes clear.
+ */
+export function placeLabels(specs: LabelSpec[]): PlacedLabel[] {
+  const placed: PlacedLabel[] = []
+  const ordered = [...specs].sort((a, b) => a.anchorY - b.anchorY || a.anchorX - b.anchorX)
+  for (const spec of ordered) {
+    let x = spec.anchorX - spec.w / 2
+    let y = spec.anchorY - spec.lift - spec.h
+    for (let step = 0; step < 16; step += 1) {
+      if (!placed.some((other) => labelsOverlap({ x, y, w: spec.w, h: spec.h }, other))) break
+      y -= 11
+      if (step % 3 === 2) x += step % 6 === 2 ? 16 : -16
+    }
+    placed.push({ ...spec, x, y })
+  }
+  return placed
+}
+
+export function buildFloorLabels(
+  agents: Array<{ slug: string; name: string; isBoss: boolean }>,
+  personAt: Record<string, Vec | null>,
+  selected: string | null,
+): LabelSpec[] {
+  const specs: LabelSpec[] = []
+  for (const agent of agents) {
+    const desk = deskPoint(agent.slug, agent.isBoss)
+    const person = personAt[agent.slug] ?? null
+    const expanded = selected === agent.slug
+    if (person) {
+      const screen = project(person.x, person.y)
+      const size = labelSize(agent.name, expanded)
+      const stagger = agent.slug.length % 2 === 0 ? 10 : -10
+      specs.push({
+        id: `person:${agent.slug}`,
+        kind: 'person',
+        slug: agent.slug,
+        anchorX: screen.x + stagger,
+        anchorY: screen.y,
+        w: size.w,
+        h: size.h,
+        lift: expanded ? 72 : 58,
+      })
+    }
+    if (showDeskLabel(person, desk)) {
+      const screen = project(desk.x, desk.y - 1.7)
+      const size = labelSize(agent.name, false)
+      specs.push({
+        id: `desk:${agent.slug}`,
+        kind: 'desk',
+        slug: agent.slug,
+        anchorX: screen.x,
+        anchorY: screen.y,
+        w: size.w,
+        h: size.h,
+        lift: 4,
+      })
+    }
+  }
+  return specs
 }
 
 export function loungeSlot(slug: string): number {

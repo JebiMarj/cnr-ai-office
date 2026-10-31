@@ -1002,7 +1002,7 @@ p {
 
 .iso-svg {
   display: block;
-  width: max(100%, 960px);
+  width: 100%;
   height: auto;
 }
 
@@ -1012,8 +1012,38 @@ p {
 }
 
 .floor-tile {
-  stroke: rgba(254, 189, 99, 0.16);
-  stroke-width: 0.7;
+  stroke: rgba(254, 189, 99, 0.22);
+  stroke-width: 0.8;
+}
+
+.neon-rim {
+  fill: none;
+  stroke: rgba(254, 189, 99, 0.7);
+  stroke-width: 2.6;
+  filter: drop-shadow(0 0 6px rgba(228, 57, 110, 0.7));
+}
+
+.floor-chip .chip-bg {
+  fill: rgba(8, 6, 12, 0.9);
+  stroke: rgba(254, 189, 99, 0.55);
+  stroke-width: 1;
+}
+
+.floor-chip.is-open .chip-bg,
+.floor-chip:hover .chip-bg {
+  stroke: var(--gold);
+}
+
+.floor-chip .label-detail {
+  fill: var(--gold);
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0;
+}
+
+.floor-chip:hover .label-detail,
+.floor-chip.is-open .label-detail {
+  opacity: 1;
 }
 
 .rug {
