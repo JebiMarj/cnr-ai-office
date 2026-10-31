@@ -1,0 +1,7 @@
+# Local config for the phase 1 office. Do not link this repo to a hosted project
+# from automation. Apply the migration and deploy the function after review.
+project_id = "cnr-ai-office"
+
+# Bots authenticate with the OFFICE_AGENT_SECRET header, not a user JWT.
+[functions.post-status]
+verify_jwt = false
