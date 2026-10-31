@@ -14,22 +14,21 @@ Deno.serve((request: Request) => {
 })
 
 async function readStoredSecretHash(): Promise<string | null> {
-  const supabase = serviceClient('office_private')
+  const supabase = serviceClient()
   if (!supabase) return null
-  const { data, error } = await supabase.rpc('agent_secret_hash')
+  const { data, error } = await supabase.rpc('office_agent_secret_hash')
   if (error) throw new Error('secret lookup failed')
   if (typeof data !== 'string') return null
   const hash = data.trim().toLowerCase()
   return hash === '' ? null : hash
 }
 
-function serviceClient(schema?: string) {
+function serviceClient() {
   const url = Deno.env.get('SUPABASE_URL')
   const serviceKey = readServiceKey()
   if (!url || !serviceKey) return null
   return createClient(url, serviceKey, {
     auth: { persistSession: false, autoRefreshToken: false },
-    db: schema ? { schema } : undefined,
   })
 }
 

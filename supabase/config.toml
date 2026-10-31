@@ -2,12 +2,8 @@
 # from automation. Apply the migration and deploy the function after review.
 project_id = "cnr-ai-office"
 
-# office_private is not a public read schema. It is listed so post-status can
-# call agent_secret_hash with the service role. anon and authenticated have no grants.
-[api]
-schemas = ["public", "graphql_public", "office_private"]
-extra_search_path = ["public", "extensions"]
-
 # Bots authenticate with the shared secret header, not a user JWT.
+# office_private is not an exposed Data API schema. post-status calls
+# public.office_agent_secret_hash() instead.
 [functions.post-status]
 verify_jwt = false

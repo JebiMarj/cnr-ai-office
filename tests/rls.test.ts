@@ -119,13 +119,14 @@ describe('RLS', () => {
     const names = [...byTable.values()].flat()
     expect(names.some((name) => /email|secret|password|phone|token|address/i.test(name))).toBe(false)
 
-    const functions = await db.query<{ n: number }>(`
-      select count(*)::int as n
+    const functions = await db.query<{ name: string }>(`
+      select p.proname as name
       from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public'
+      order by p.proname
     `)
-    expect(functions.rows[0]?.n).toBe(0)
+    expect(functions.rows.map((row) => row.name)).toEqual(['office_agent_secret_hash'])
 
     const usage = await db.query<{ allowed: boolean }>(`
       select
@@ -240,9 +241,29 @@ describe('RLS', () => {
       expect(privileges.rows[0], role).toEqual({ select: false, write: false })
     }
 
+    const definer = await db.query<{ prosecdef: boolean; proconfig: string[] | null }>(`
+      select p.prosecdef, p.proconfig
+      from pg_proc p
+      join pg_namespace n on n.oid = p.pronamespace
+      where n.nspname = 'public' and p.proname = 'office_agent_secret_hash'
+    `)
+    expect(definer.rows[0]?.prosecdef).toBe(true)
+    expect(definer.rows[0]?.proconfig ?? []).toContain('search_path=pg_catalog')
+
+    for (const role of ['anon', 'authenticated'] as const) {
+      const execute = await db.query<{ allowed: boolean }>(`
+        select has_function_privilege('${role}', 'public.office_agent_secret_hash()', 'EXECUTE') as allowed
+      `)
+      expect(execute.rows[0]?.allowed, role).toBe(false)
+    }
+    const serviceExecute = await db.query<{ allowed: boolean }>(`
+      select has_function_privilege('service_role', 'public.office_agent_secret_hash()', 'EXECUTE') as allowed
+    `)
+    expect(serviceExecute.rows[0]?.allowed).toBe(true)
+
     await expectDenied('anon', `select value from office_private.settings`)
-    await expectDenied('anon', `select office_private.agent_secret_hash()`)
-    await expectDenied('authenticated', `select office_private.agent_secret_hash()`)
+    await expectDenied('anon', `select public.office_agent_secret_hash()`)
+    await expectDenied('authenticated', `select public.office_agent_secret_hash()`)
 
     const hash = 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'
     await db.exec('begin')
@@ -252,10 +273,10 @@ describe('RLS', () => {
         insert into office_private.settings (key, value)
         values ('agent_secret_sha256', '${hash}')
       `)
-      const stored = await db.query<{ agent_secret_hash: string }>(
-        `select office_private.agent_secret_hash()`,
+      const stored = await db.query<{ office_agent_secret_hash: string }>(
+        `select public.office_agent_secret_hash()`,
       )
-      expect(stored.rows[0]?.agent_secret_hash).toBe(hash)
+      expect(stored.rows[0]?.office_agent_secret_hash).toBe(hash)
     } finally {
       await db.exec('rollback')
     }

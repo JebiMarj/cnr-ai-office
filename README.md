@@ -28,8 +28,7 @@ This repo does not connect to a Supabase project. After review:
 
 1. Run both files in `supabase/migrations/` (`supabase db push`, or paste them into the SQL editor in order).
 2. Set the bot secret, either as a function env var or as a hash in the database (see below).
-3. Expose the `office_private` schema on the Data API if you use the hash. `supabase/config.toml` already lists it. In the dashboard that is Project Settings → API → Exposed schemas. Add `office_private` next to `public`. anon still has no grants on that schema.
-4. Deploy the function: `supabase functions deploy post-status`
+3. Deploy the function: `supabase functions deploy post-status`
 
 `supabase/config.toml` sets `verify_jwt = false` for `post-status`. Bots do not have user JWTs. The function rejects any request whose `x-office-secret` header does not match the shared secret. It writes with the service role key Supabase injects (`SUPABASE_SERVICE_ROLE_KEY`, or `SUPABASE_SECRET_KEYS.default` on the newer key model).
 
@@ -41,7 +40,7 @@ If you can set Edge Function secrets, that wins:
 supabase secrets set OFFICE_AGENT_SECRET='YOUR_OFFICE_AGENT_SECRET'
 ```
 
-If you cannot set function secrets, store only the SHA-256 of the secret. Leave `OFFICE_AGENT_SECRET` unset. The function then calls `office_private.agent_secret_hash()` and compares that hex digest to a SHA-256 of the `x-office-secret` header.
+If you cannot set function secrets, store only the SHA-256 of the secret. Leave `OFFICE_AGENT_SECRET` unset. The function then calls the public RPC `office_agent_secret_hash()` and compares that hex digest to a SHA-256 of the `x-office-secret` header. You do not need to expose the `office_private` schema. Only `service_role` can execute the RPC.
 
 ```bash
 printf '%s' 'YOUR_OFFICE_AGENT_SECRET' | sha256sum
@@ -58,7 +57,7 @@ To rotate it, update that row with a new hash. Do not put the secret itself in t
 
 ### What the migrations do
 
-`20261031114500_office_agent_secret.sql` creates `office_private.settings` (`key`, `value`). Row level security is on and forced, and there are no policies. `public`, `anon`, and `authenticated` have every privilege revoked. `service_role` can read the table and execute `office_private.agent_secret_hash()`, which returns the stored `agent_secret_sha256` value.
+`20261031114500_office_agent_secret.sql` creates `office_private.settings` (`key`, `value`). Row level security is on and forced, and there are no policies. `public`, `anon`, and `authenticated` have every privilege revoked on the table. `public.office_agent_secret_hash()` is security definer, with `search_path` locked to `pg_catalog`. Execute is revoked from `public`, `anon`, and `authenticated`, and granted only to `service_role`. It returns the stored `agent_secret_sha256` value.
 
 `20261031103000_office_phase1.sql`:
 
