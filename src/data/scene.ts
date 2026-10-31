@@ -2,7 +2,7 @@ import { displayStatus } from './shift.ts'
 import type { OfficeSnapshot } from './types.ts'
 
 /**
- * What a later Phaser or PixiJS scene should read.
+ * Public scene snapshot. The isometric floor reads this through toFloorAgents.
  * deskX grows east and deskY grows south, both as percentages of the floor.
  * Subscribe to OfficeStore and call toSceneAgents instead of opening a second Supabase client.
  */

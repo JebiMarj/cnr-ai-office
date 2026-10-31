@@ -243,7 +243,7 @@ insert into public.agents (
     24, 40,
     'waiting_on_jv',
     'manual',
-    'Weekly client handoff is ready for review',
+    null,
     false,
     now() - interval '18 minutes'
   ),
@@ -256,7 +256,7 @@ insert into public.agents (
     28, 70,
     'working',
     'manual',
-    'Building the GHL onboarding pipeline',
+    null,
     false,
     now() - interval '12 minutes'
   ),
@@ -269,7 +269,7 @@ insert into public.agents (
     46, 36,
     'idle',
     'manual',
-    'Architecture notes are filed',
+    null,
     false,
     now() - interval '35 minutes'
   ),
@@ -282,7 +282,7 @@ insert into public.agents (
     68, 46,
     'working',
     'manual',
-    'Wiring realtime desk updates',
+    null,
     false,
     now() - interval '4 minutes'
   ),
@@ -308,103 +308,11 @@ insert into public.agents (
     72, 66,
     'working',
     'manual',
-    'Color study for the spring campaign',
+    null,
     false,
     now() - interval '6 minutes'
   );
 
-insert into public.activities (agent_id, task_title, status, created_at, updated_at, finished_at) values
-  (
-    '55555555-5555-4555-8555-555555555555',
-    'Wiring realtime desk updates',
-    'working',
-    now() - interval '4 minutes',
-    now() - interval '4 minutes',
-    null
-  ),
-  (
-    '77777777-7777-4777-8777-777777777777',
-    'Color study for the spring campaign',
-    'working',
-    now() - interval '6 minutes',
-    now() - interval '6 minutes',
-    null
-  ),
-  (
-    '33333333-3333-4333-8333-333333333333',
-    'Building the GHL onboarding pipeline',
-    'working',
-    now() - interval '12 minutes',
-    now() - interval '12 minutes',
-    null
-  ),
-  (
-    '22222222-2222-4222-8222-222222222222',
-    'Weekly client handoff drafted',
-    'waiting_on_jv',
-    now() - interval '18 minutes',
-    now() - interval '18 minutes',
-    null
-  ),
-  (
-    '44444444-4444-4444-8444-444444444444',
-    'Filed the architecture notes',
-    'done',
-    now() - interval '35 minutes',
-    now() - interval '35 minutes',
-    now() - interval '35 minutes'
-  ),
-  (
-    '66666666-6666-4666-8666-666666666666',
-    'Closed the overnight support queue',
-    'done',
-    now() - interval '2 hours',
-    now() - interval '2 hours',
-    now() - interval '2 hours'
-  ),
-  (
-    '55555555-5555-4555-8555-555555555555',
-    'Pinned the floor data model',
-    'done',
-    now() - interval '3 hours',
-    now() - interval '3 hours',
-    now() - interval '3 hours'
-  ),
-  (
-    '77777777-7777-4777-8777-777777777777',
-    'Posted the first creative concepts',
-    'done',
-    now() - interval '5 hours',
-    now() - interval '5 hours',
-    now() - interval '5 hours'
-  );
-
-insert into public.approvals (agent_id, title, status, created_at, resolved_at) values
-  (
-    '22222222-2222-4222-8222-222222222222',
-    'Approve the weekly client handoff',
-    'pending',
-    now() - interval '18 minutes',
-    null
-  ),
-  (
-    '44444444-4444-4444-8444-444444444444',
-    'Sign off on the systems diagram',
-    'pending',
-    now() - interval '7 minutes',
-    null
-  ),
-  (
-    '77777777-7777-4777-8777-777777777777',
-    'Approve the hero palette',
-    'pending',
-    now() - interval '2 minutes',
-    null
-  ),
-  (
-    '33333333-3333-4333-8333-333333333333',
-    'Hold the vendor swap',
-    'declined',
-    now() - interval '1 day',
-    now() - interval '20 hours'
-  );
+-- Roster only. Sample tasks and approvals live in the client demo (?mock=1),
+-- not in this seed. 20261031180000_clear_sample_floor_seed.sql removes any
+-- copy of those rows that an earlier draft of this file already inserted.

@@ -1,20 +1,10 @@
 import { Avatar } from './Avatar.tsx'
-import { FloorPlan } from './FloorPlan.tsx'
 import { StatusPill } from './StatusPill.tsx'
 import { bossFocus, bossShiftLine, displayStatus } from '../data/shift.ts'
 import { formatAgo } from '../data/time.ts'
-import { toSceneAgents } from '../data/scene.ts'
-import type { Agent, OfficeSnapshot } from '../data/types.ts'
+import type { Agent } from '../data/types.ts'
 
-export function BossOffice({
-  agent,
-  snapshot,
-  now,
-}: {
-  agent: Agent
-  snapshot: OfficeSnapshot
-  now: number
-}) {
+export function BossOffice({ agent, now }: { agent: Agent; now: number }) {
   const moment = new Date(now)
   const status = displayStatus(agent, moment)
   return (
@@ -34,7 +24,6 @@ export function BossOffice({
         <p className="meta">{bossShiftLine(agent, moment)}</p>
         <p className="meta">Updated {formatAgo(agent.updatedAt, now)}</p>
       </div>
-      <FloorPlan agents={toSceneAgents(snapshot, moment)} />
     </section>
   )
 }

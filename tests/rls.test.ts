@@ -39,6 +39,17 @@ afterAll(async () => {
 })
 
 describe('RLS', () => {
+  it('ships the roster without sample tasks or approvals', async () => {
+    const tasks = await db.query<{ n: number }>(`
+      select count(*)::int as n from public.agents where current_task is not null
+    `)
+    const activities = await db.query<{ n: number }>(`select count(*)::int as n from public.activities`)
+    const approvals = await db.query<{ n: number }>(`select count(*)::int as n from public.approvals`)
+    expect(tasks.rows[0]?.n).toBe(0)
+    expect(activities.rows[0]?.n).toBe(0)
+    expect(approvals.rows[0]?.n).toBe(0)
+  })
+
   it('forces row level security and publishes the floor tables', async () => {
     const tables = await db.query<{
       relname: string
@@ -163,11 +174,7 @@ describe('RLS', () => {
       `)
       return result.rows.map((row) => row.title)
     })
-    expect(pending).toEqual([
-      'Approve the weekly client handoff',
-      'Sign off on the systems diagram',
-      'Approve the hero palette',
-    ])
+    expect(pending).toEqual([])
 
     await expectDenied('anon', `
       insert into public.agents (slug, name, role, desk_x, desk_y, status, status_mode, is_boss)
@@ -203,17 +210,28 @@ describe('RLS', () => {
       values ('probe', 'Probe', 'Probe', 1, 1, 'idle', 'manual', false)
     `, /row-level security/i)
 
-    await asRole('office_rls_probe', async () => {
+    await db.exec('begin')
+    try {
+      await db.query(`
+        insert into public.approvals (agent_id, title, status)
+        select id, 'RLS pending ' || g, 'pending'
+        from public.agents
+        cross join generate_series(1, 3) as g
+        where slug = 'alex'
+      `)
+      await db.exec('set local role office_rls_probe')
       await db.query(`update public.agents set current_task = 'Hijacked' where slug = 'tech'`)
       await db.query(`delete from public.approvals where status = 'pending'`)
-    })
-
-    const after = await db.query<{ task: string | null; pending: number }>(`
-      select
-        (select current_task from public.agents where slug = 'tech') as task,
-        (select count(*)::int from public.approvals where status = 'pending') as pending
-    `)
-    expect(after.rows[0]).toEqual({ task: null, pending: 3 })
+      await db.exec('reset role')
+      const after = await db.query<{ task: string | null; pending: number }>(`
+        select
+          (select current_task from public.agents where slug = 'tech') as task,
+          (select count(*)::int from public.approvals where status = 'pending') as pending
+      `)
+      expect(after.rows[0]).toEqual({ task: null, pending: 3 })
+    } finally {
+      await db.exec('rollback')
+    }
   })
 
   it('keeps the agent secret hash in a forced-RLS table with no policies', async () => {
