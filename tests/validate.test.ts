@@ -70,6 +70,16 @@ describe('post-status validation', () => {
       ok: true,
       command: { status: 'auto' },
     })
+
+    expect(parseOfficeCommand({ action: 'set_human_status', slug: 'marj', status: 'in_meeting' })).toMatchObject({
+      ok: true,
+      command: { action: 'set_human_status', slug: 'marj', status: 'in_meeting' },
+    })
+
+    expect(parseOfficeCommand({ action: 'set_human_status', slug: 'jv', status: 'auto' })).toMatchObject({
+      ok: true,
+      command: { slug: 'jv', status: 'auto' },
+    })
   })
 
   it('rejects malformed bodies', () => {
@@ -95,6 +105,8 @@ describe('post-status validation', () => {
       { action: 'resolve_approval', approval_id: APPROVAL_ID, status: 'pending' },
       { action: 'set_jv_status', status: 'working' },
       { action: 'set_jv_status', status: 'auto', slug: 'jv' },
+      { action: 'set_human_status', slug: 'marj', status: 'working' },
+      { action: 'set_human_status', status: 'online' },
       { action: 'set_current_task', slug: 'gia' },
       { action: 'add_activity', slug: "dev'; drop table agents;--", task_title: 'Hi', status: 'working' },
       { action: 'set_agent_status', slug: 'dev', status: 'working', __proto__: { admin: true } },

@@ -13,6 +13,10 @@ type AgentRow = {
   status_mode: Agent['statusMode']
   current_task: string | null
   is_boss: boolean
+  is_human: boolean
+  floor_rank: number
+  shift_start_hour: number
+  shift_end_hour: number
   updated_at: string
 }
 
@@ -69,7 +73,7 @@ export function createLiveSource(config: { url: string; anonKey: string }): Offi
         const [agents, activities, approvals] = await Promise.all([
           supabase
             .from('office_agents')
-            .select('id, slug, name, subtitle, role, desk_x, desk_y, status, status_mode, current_task, is_boss, updated_at'),
+            .select('id, slug, name, subtitle, role, desk_x, desk_y, status, status_mode, current_task, is_boss, is_human, floor_rank, shift_start_hour, shift_end_hour, updated_at'),
           supabase
             .from('office_activities')
             .select('id, agent_id, agent_slug, agent_name, task_title, status, created_at, updated_at, finished_at')
@@ -141,6 +145,10 @@ function mapAgent(row: AgentRow): Agent {
     statusMode: row.status_mode,
     currentTask: row.current_task,
     isBoss: row.is_boss,
+    isHuman: row.is_human,
+    rank: row.floor_rank,
+    shiftStartHour: row.shift_start_hour,
+    shiftEndHour: row.shift_end_hour,
     updatedAt: row.updated_at,
   }
 }

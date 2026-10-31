@@ -1,6 +1,6 @@
 # C&R AI Office
 
-A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, six labelled desks, a lounge, and a conference table. People walk between those zones when their status changes. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
+A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, Marj’s VP office, six labelled desks, a lounge, a rest room, a library, a pantry, a gym, a reception desk, and a conference table. People walk between those zones when their status changes. Idle bots wander the amenity rooms. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
 
 The page has no login. Anyone with the link can read it. Bots write through one edge function. The anon key cannot insert, update, or delete.
 
@@ -131,15 +131,22 @@ curl --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/post-status' 
   --header 'x-office-secret: YOUR_OFFICE_AGENT_SECRET' \
   --data '{"action":"resolve_approval","approval_id":"APPROVAL_UUID","status":"approved"}'
 
-# JV. status is online, in_meeting, away, or auto.
+# JV. status is online, in_meeting, away, or auto. This still updates only the CEO.
 curl --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/post-status' \
   --header 'content-type: application/json' \
   --header 'apikey: YOUR_SUPABASE_ANON_KEY' \
   --header 'x-office-secret: YOUR_OFFICE_AGENT_SECRET' \
   --data '{"action":"set_jv_status","status":"in_meeting"}'
+
+# JV or Marj. slug is jv or marj. status is online, in_meeting, away, or auto.
+curl --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/post-status' \
+  --header 'content-type: application/json' \
+  --header 'apikey: YOUR_SUPABASE_ANON_KEY' \
+  --header 'x-office-secret: YOUR_OFFICE_AGENT_SECRET' \
+  --data '{"action":"set_human_status","slug":"marj","status":"in_meeting"}'
 ```
 
-Staff statuses are `working`, `idle`, `waiting_on_jv`, and `offline`. Limits: task titles 120 characters, current tasks 160, approval titles 140, whole body 4096. Asking the boss to take a staff action returns 400. Use `set_jv_status` for him.
+Staff statuses are `working`, `idle`, `waiting_on_jv`, and `offline`. Limits: task titles 120 characters, current tasks 160, approval titles 140, whole body 4096. Asking a human executive to take a staff action returns 400. `set_jv_status` still updates JV. `set_human_status` updates JV or Marj. `auto` follows that person’s `shift_start_hour` and `shift_end_hour` (default 9:00 PM–5:00 AM Manila).
 
 ## The floor
 
@@ -150,17 +157,18 @@ Zones come from the effective status:
 | Who | Status | Where |
 | --- | --- | --- |
 | Staff | `working`, `waiting_on_jv` | Their desk. Waiting shows a gold badge. |
-| Staff | `idle` | A seat in the lounge |
+| Staff | `idle` | Wandering the lounge, rest room, library, pantry, and gym. Reduced motion keeps them in a seat. |
 | Staff | `offline` | Hidden. The desk stays, dimmed. |
 | JV | `online` | Corner office |
-| JV | `in_meeting` | Conference table |
-| JV | `away` | The landing outside the door |
+| Marj | `online` | VP office |
+| JV, Marj | `in_meeting` | Conference table, separate seats |
+| JV, Marj | `away` | The landing outside the door |
 
-A status change builds a walkway path and moves the figure along it. `prefers-reduced-motion: reduce` snaps to the destination. Click a person or a desk to open the detail card. The activity feed and approvals stay in the board, which starts open on a wide screen and closed on a narrow one.
+Humans are `is_human`, ordered by `floor_rank` (JV 1, Marj 2, then the bots). A status change builds a walkway path and moves the figure along it. Idle bots then follow a seeded tour of the amenity rooms. `prefers-reduced-motion: reduce` snaps to the destination and leaves idle bots seated. Click a person or a desk to open the detail card. The activity feed and approvals stay in the board, which starts open on a wide screen and closed on a narrow one. The header census counts bots only.
 
 ## Art and licences
 
-The office (rooms, furniture, plants, and figures) is original SVG drawn for this project. No sprite pack and no game engine.
+The office (rooms, furniture, plants, and figures) is original SVG drawn for this project. No sprite pack and no game engine. People are stylised humans. Furniture is drawn as desks, chairs, sofas, shelves, and gym equipment rather than solid boxes.
 
 The Create & Reach mark in `public/` is the official logo supplied by the client. `cnr-logo.png` is a 512px export, `cnr-logo-128.png` is the header size, `favicon-32.png` is the 32px icon, and `apple-touch-icon.png` is 180px. They are brand assets, not an open-source icon set.
 

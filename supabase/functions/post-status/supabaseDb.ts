@@ -12,6 +12,9 @@ type AgentRecord = {
   slug: string
   name: string
   is_boss: boolean
+  is_human: boolean
+  shift_start_hour: number
+  shift_end_hour: number
   status: AgentRow['status']
   status_mode: AgentRow['statusMode']
   current_task: string | null
@@ -36,7 +39,7 @@ export function createSupabaseOfficeDb(supabase: SupabaseClient): OfficeDb {
     async getAgentBySlug(slug) {
       const { data, error } = await supabase
         .from('agents')
-        .select('id, slug, name, is_boss, status, status_mode, current_task')
+        .select('id, slug, name, is_boss, is_human, shift_start_hour, shift_end_hour, status, status_mode, current_task')
         .eq('slug', slug)
         .maybeSingle()
       if (error) throw new Error('agent lookup failed')
@@ -46,7 +49,7 @@ export function createSupabaseOfficeDb(supabase: SupabaseClient): OfficeDb {
     async getBoss() {
       const { data, error } = await supabase
         .from('agents')
-        .select('id, slug, name, is_boss, status, status_mode, current_task')
+        .select('id, slug, name, is_boss, is_human, shift_start_hour, shift_end_hour, status, status_mode, current_task')
         .eq('is_boss', true)
         .maybeSingle()
       if (error) throw new Error('boss lookup failed')
@@ -165,6 +168,9 @@ function mapAgent(row: AgentRecord): AgentRow {
     slug: row.slug,
     name: row.name,
     isBoss: row.is_boss,
+    isHuman: row.is_human,
+    shiftStartHour: row.shift_start_hour,
+    shiftEndHour: row.shift_end_hour,
     status: row.status,
     statusMode: row.status_mode,
     currentTask: row.current_task,

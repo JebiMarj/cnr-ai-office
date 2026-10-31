@@ -16,6 +16,9 @@ export type AgentRow = {
   slug: string
   name: string
   isBoss: boolean
+  isHuman: boolean
+  shiftStartHour: number
+  shiftEndHour: number
   status: StaffStatus | BossStatus
   statusMode: StatusMode
   currentTask: string | null
@@ -76,7 +79,7 @@ export async function applyCommand(db: OfficeDb, command: Command, now = new Dat
     case 'set_agent_status': {
       const agent = await db.getAgentBySlug(command.slug)
       if (!agent) return missingAgent()
-      if (agent.isBoss) return bossDeskRejected()
+      if (isExecutive(agent)) return executiveRejected()
       await db.updateAgent({
         slug: agent.slug,
         status: command.status,
@@ -88,8 +91,8 @@ export async function applyCommand(db: OfficeDb, command: Command, now = new Dat
     case 'set_current_task': {
       const agent = await db.getAgentBySlug(command.slug)
       if (!agent) return missingAgent()
-      if (agent.isBoss) {
-        return { ok: false, status: 400, error: 'The boss does not take a desk task through this action.' }
+      if (isExecutive(agent)) {
+        return { ok: false, status: 400, error: 'An executive does not take a desk task through this action.' }
       }
       await db.updateAgent({
         slug: agent.slug,
@@ -102,7 +105,7 @@ export async function applyCommand(db: OfficeDb, command: Command, now = new Dat
     case 'add_activity': {
       const agent = await db.getAgentBySlug(command.slug)
       if (!agent) return missingAgent()
-      if (agent.isBoss) return bossDeskRejected()
+      if (isExecutive(agent)) return executiveRejected()
       const created = await db.insertActivity({
         agentId: agent.id,
         taskTitle: command.taskTitle,
@@ -132,7 +135,7 @@ export async function applyCommand(db: OfficeDb, command: Command, now = new Dat
     case 'add_approval': {
       const agent = await db.getAgentBySlug(command.slug)
       if (!agent) return missingAgent()
-      if (agent.isBoss) return bossDeskRejected()
+      if (isExecutive(agent)) return executiveRejected()
       const created = await db.insertApproval({
         agentId: agent.id,
         title: command.title,
@@ -156,30 +159,41 @@ export async function applyCommand(db: OfficeDb, command: Command, now = new Dat
     }
     case 'set_jv_status':
       return setJvStatus(db, command.status, now)
+    case 'set_human_status':
+      return setHumanStatus(db, command.slug, command.status, now)
   }
 }
 
 async function setJvStatus(db: OfficeDb, status: JvStatus, now: Date): Promise<ApplyResult> {
   const boss = await db.getBoss()
   if (!boss) return { ok: false, status: 404, error: 'The office has no boss on record.' }
-
-  if (status === 'auto') {
-    await db.updateAgent({
-      slug: boss.slug,
-      status: scheduledBossStatus(now),
-      statusMode: 'auto',
-      currentTask: boss.currentTask,
-    })
-  } else {
-    await db.updateAgent({
-      slug: boss.slug,
-      status,
-      statusMode: 'manual',
-      currentTask: boss.currentTask,
-    })
-  }
-
+  await writeExecutiveStatus(db, boss, status, now)
   return done('set_jv_status', { slug: boss.slug, status })
+}
+
+async function setHumanStatus(db: OfficeDb, slug: string, status: JvStatus, now: Date): Promise<ApplyResult> {
+  const agent = await db.getAgentBySlug(slug)
+  if (!agent) return missingAgent()
+  if (!isExecutive(agent)) {
+    return { ok: false, status: 400, error: 'That person uses a desk status, not an executive status.' }
+  }
+  await writeExecutiveStatus(db, agent, status, now)
+  return done('set_human_status', { slug: agent.slug, status })
+}
+
+async function writeExecutiveStatus(db: OfficeDb, agent: AgentRow, status: JvStatus, now: Date): Promise<void> {
+  await db.updateAgent({
+    slug: agent.slug,
+    status: status === 'auto'
+      ? scheduledBossStatus(now, { startHour: agent.shiftStartHour, endHour: agent.shiftEndHour })
+      : status,
+    statusMode: status === 'auto' ? 'auto' : 'manual',
+    currentTask: agent.currentTask,
+  })
+}
+
+function isExecutive(agent: { isBoss: boolean; isHuman: boolean }): boolean {
+  return agent.isBoss || agent.isHuman
 }
 
 function done(action: Command['action'], detail: Record<string, string>): ApplyResult {
@@ -190,6 +204,6 @@ function missingAgent(): ApplyResult {
   return { ok: false, status: 404, error: 'No agent with that slug.' }
 }
 
-function bossDeskRejected(): ApplyResult {
-  return { ok: false, status: 400, error: 'The boss status uses the set_jv_status action.' }
+function executiveRejected(): ApplyResult {
+  return { ok: false, status: 400, error: 'Executive status uses set_human_status.' }
 }

@@ -83,12 +83,12 @@ export function createMockSource(now = new Date()): OfficeSource {
 
 function applyDesk(snapshot: OfficeSnapshot, step: DeskStep, stamp: string): OfficeSnapshot {
   const agents = snapshot.agents.map((agent) =>
-    agent.slug === step.slug && !agent.isBoss
+    agent.slug === step.slug && !agent.isBoss && !agent.isHuman
       ? { ...agent, status: step.status, currentTask: step.currentTask, updatedAt: stamp }
       : agent,
   )
   const person = agents.find((agent) => agent.slug === step.slug)
-  if (!person || person.isBoss) return snapshot
+  if (!person || person.isBoss || person.isHuman) return snapshot
 
   let activities = snapshot.activities.map((activity) => {
     if (activity.agentSlug !== step.slug || activity.status !== 'working' || !step.completeWorkingAs) {
@@ -118,7 +118,7 @@ function applyDesk(snapshot: OfficeSnapshot, step: DeskStep, stamp: string): Off
 }
 
 function applyApproval(snapshot: OfficeSnapshot, step: ApprovalStep, stamp: string): OfficeSnapshot {
-  const person = snapshot.agents.find((agent) => agent.slug === step.slug && !agent.isBoss)
+  const person = snapshot.agents.find((agent) => agent.slug === step.slug && !agent.isBoss && !agent.isHuman)
   if (!person) return snapshot
   const exists = snapshot.approvals.some((item) => item.title === step.title && item.status === 'pending')
   if (exists) return snapshot
@@ -165,6 +165,6 @@ function sortActivities(activities: Activity[]): Activity[] {
 
 export function staffAgents(agents: Agent[]): Agent[] {
   return agents
-    .filter((agent) => !agent.isBoss)
-    .sort((a, b) => a.deskY - b.deskY || a.deskX - b.deskX)
+    .filter((agent) => !agent.isBoss && !agent.isHuman)
+    .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name))
 }

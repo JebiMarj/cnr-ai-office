@@ -1002,7 +1002,7 @@ p {
 
 .iso-svg {
   display: block;
-  width: 100%;
+  width: max(100%, 1280px);
   height: auto;
 }
 
@@ -1012,8 +1012,40 @@ p {
 }
 
 .floor-tile {
-  stroke: rgba(254, 189, 99, 0.22);
-  stroke-width: 0.8;
+  stroke: rgba(254, 189, 99, 0.16);
+  stroke-width: 0.7;
+}
+
+.tile-tile {
+  stroke: rgba(246, 241, 232, 0.28);
+  stroke-width: 1;
+}
+
+.tile-rubber {
+  stroke: rgba(247, 149, 33, 0.16);
+}
+
+.rubber-mat {
+  fill: rgba(18, 22, 28, 0.35);
+  stroke: rgba(247, 149, 33, 0.45);
+  stroke-width: 1.4;
+}
+
+.rug-office,
+.rug-vp {
+  fill: rgba(228, 57, 110, 0.08);
+}
+
+.rug-library,
+.rug-conference {
+  fill: rgba(254, 189, 99, 0.05);
+}
+
+.rec-sign {
+  fill: var(--paper);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
 }
 
 .neon-rim {
@@ -1023,8 +1055,16 @@ p {
   filter: drop-shadow(0 0 6px rgba(228, 57, 110, 0.7));
 }
 
+.furn {
+  pointer-events: none;
+}
+
+.floor-labels {
+  pointer-events: none;
+}
+
 .floor-chip .chip-bg {
-  fill: rgba(8, 6, 12, 0.9);
+  fill: rgba(8, 6, 12, 0.94);
   stroke: rgba(254, 189, 99, 0.55);
   stroke-width: 1;
 }
@@ -1203,9 +1243,57 @@ p {
 }
 
 .bob {
-  animation: walker-bob 0.38s ease-in-out infinite;
+  animation: walker-bob 0.42s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center bottom;
+}
+
+.limb {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+}
+
+.person[data-gait="walk"] .leg-front,
+.person[data-gait="treadmill"] .leg-front {
+  animation: leg-swing 0.46s ease-in-out infinite;
+}
+
+.person[data-gait="walk"] .leg-back,
+.person[data-gait="treadmill"] .leg-back {
+  animation: leg-swing 0.46s ease-in-out infinite reverse;
+}
+
+.person[data-gait="walk"] .arm-front,
+.person[data-gait="treadmill"] .arm-front {
+  animation: arm-swing 0.46s ease-in-out infinite reverse;
+}
+
+.person[data-gait="walk"] .arm-back,
+.person[data-gait="treadmill"] .arm-back {
+  animation: arm-swing 0.46s ease-in-out infinite;
+}
+
+.person[data-gait="treadmill"] .leg-front,
+.person[data-gait="treadmill"] .leg-back,
+.person[data-gait="treadmill"] .arm-front,
+.person[data-gait="treadmill"] .arm-back {
+  animation-duration: 0.28s;
+}
+
+.person[data-gait="sit"] .arm-front {
+  transform: rotate(22deg);
+}
+
+.person[data-gait="sit"] .arm-back {
+  transform: rotate(-16deg);
+}
+
+.lamp-glow {
+  filter: drop-shadow(0 0 6px rgba(254, 189, 99, 0.45));
+}
+
+.tread-belt {
+  animation: belt-move 0.45s linear infinite;
 }
 
 .pan-hint {
@@ -1239,7 +1327,22 @@ p {
 @keyframes walker-bob {
   0%,
   100% { transform: translateY(0); }
-  50% { transform: translateY(-3.5px); }
+  50% { transform: translateY(-2.5px); }
+}
+
+@keyframes leg-swing {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(22deg); }
+}
+
+@keyframes arm-swing {
+  from { transform: rotate(26deg); }
+  to { transform: rotate(-24deg); }
+}
+
+@keyframes belt-move {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -14; }
 }
 
 @keyframes sheen-line {

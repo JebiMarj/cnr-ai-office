@@ -9,6 +9,7 @@ import { Header } from './components/Header.tsx'
 import { createLiveSource } from './data/liveSource.ts'
 import { createMockSource } from './data/mockSource.ts'
 import { previewIsMock, readLiveConfig } from './data/mode.ts'
+import { isExecutive } from './data/shift.ts'
 import { createOfficeStore, type OfficeStore } from './data/store.ts'
 import { OfficeFloor } from './floor/OfficeFloor.tsx'
 import { toFloorAgents } from './floor/motion.ts'
@@ -103,7 +104,7 @@ export function App() {
                     Close
                   </button>
                 </div>
-                {selected.isBoss ? (
+                {isExecutive(selected) ? (
                   <BossOffice agent={selected} now={now} />
                 ) : (
                   <DeskCard agent={selected} now={now} />
