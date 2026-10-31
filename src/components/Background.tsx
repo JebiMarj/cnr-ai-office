@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { brand } from '../brand.tsx'
 
 type Star = { x: number; y: number; r: number; a: number; s: number; tint: string }
 
@@ -100,7 +101,7 @@ export function Background() {
 }
 
 function createStars(count: number): Star[] {
-  const tints = ['#f6f1e8', '#FDBE6A', '#E4386E']
+  const tints = [brand.colors.paper, brand.colors.gold, brand.colors.pink]
   return Array.from({ length: count }, (_, index) => ({
     x: ((index * 47) % 100) / 100,
     y: ((index * 29) % 100) / 100,

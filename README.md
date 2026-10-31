@@ -1,6 +1,6 @@
 # C&R AI Office
 
-A read-only floor for Create & Reach VA Services. Phase 1 is a dark dashboard: JV’s corner office, a desk for each AI employee, an approvals desk, and a live activity feed. Phase 2 can drop a Phaser or PixiJS scene onto the same store. Desk coordinates are already on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south).
+A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, six labelled desks, a lounge, and a conference table. People walk between those zones when their status changes. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
 
 The page has no login. Anyone with the link can read it. Bots write through one edge function. The anon key cannot insert, update, or delete.
 
@@ -66,7 +66,7 @@ To rotate it, update that row with a new hash. Do not put the secret itself in t
 - Revokes every privilege from `anon` and `authenticated`, then grants `SELECT` only. `service_role` can write and bypasses RLS.
 - Creates `office_agents`, `office_activities`, and `office_approvals` as `security_invoker` views. Those views are the public column list: names, roles, statuses, desk coordinates, and short titles. No emails, client records, or secrets.
 - Adds the three tables to the `supabase_realtime` publication.
-- Seeds JV and the six desks, a few tasks, and three items waiting on JV.
+- Seeds JV and the six desks only. It does not insert sample tasks, approvals, or placeholder current tasks. `20261031180000_clear_sample_floor_seed.sql` deletes those rows if an earlier copy of the phase 1 migration already inserted them. Demo tasks stay in the browser, behind `?mock=1`.
 
 JV’s `status_mode` is `auto`. From 9:00 PM through 4:59 AM Asia/Manila the dashboard shows him **online**. Outside that window it shows **away**. `set_jv_status` with `online`, `in_meeting`, or `away` pins a manual status. `auto` hands control back to the shift.
 
@@ -141,9 +141,30 @@ curl --request POST 'https://YOUR_PROJECT.supabase.co/functions/v1/post-status' 
 
 Staff statuses are `working`, `idle`, `waiting_on_jv`, and `offline`. Limits: task titles 120 characters, current tasks 160, approval titles 140, whole body 4096. Asking the boss to take a staff action returns 400. Use `set_jv_status` for him.
 
-## Phase 2
+## The floor
 
-`src/data/store.ts` exposes `OfficeStore`. A scene should call `getSceneAgents()` and subscribe. It should not open its own Supabase client. `src/data/scene.ts` documents the coordinate system.
+`src/data/store.ts` exposes `OfficeStore`. The isometric view reads `getSceneAgents()` through `toFloorAgents()` in `src/floor/motion.ts`. It does not open its own Supabase client.
+
+Zones come from the effective status:
+
+| Who | Status | Where |
+| --- | --- | --- |
+| Staff | `working`, `waiting_on_jv` | Their desk. Waiting shows a gold badge. |
+| Staff | `idle` | A seat in the lounge |
+| Staff | `offline` | Hidden. The desk stays, dimmed. |
+| JV | `online` | Corner office |
+| JV | `in_meeting` | Conference table |
+| JV | `away` | The landing outside the door |
+
+A status change builds a walkway path and moves the figure along it. `prefers-reduced-motion: reduce` snaps to the destination. Click a person or a desk to open the detail card. The activity feed and approvals stay in the board, which starts open on a wide screen and closed on a narrow one.
+
+## Art and licences
+
+The office (rooms, furniture, plants, and figures) is original SVG drawn for this project. No sprite pack and no game engine.
+
+The Create & Reach mark in `public/` is the official logo supplied by the client. `cnr-logo.png` is a 512px export, `cnr-logo-128.png` is the header size, `favicon-32.png` is the 32px icon, and `apple-touch-icon.png` is 180px. They are brand assets, not an open-source icon set.
+
+Space Grotesk and Manrope are loaded through `@fontsource` under the SIL Open Font License.
 
 ## Tests
 
@@ -156,4 +177,4 @@ npm run build
 
 ## Branding
 
-`src/brand.tsx` holds the product name, company name, colors (`#E4386E`, `#F9A23C`, `#FDBE6A`), fonts, and logo. Rebrand from that file.
+`src/brand.tsx` holds the product name, company name, logo paths, per-agent colours, fonts, and the accent colours sampled from the logo file: pink `#E4396E`, deep orange `#F79521`, light orange `#FEBD63`. Rebrand from that file. The header mark and `index.html` favicon both use the packaged logo.
