@@ -14,7 +14,8 @@ export function pathYaw(points: Vec[], traveled: number): number {
 }
 
 export function seatYaw(slug: string, zone: string): number {
-  if (zone === 'conference') return slug === 'jv' ? Math.PI / 2 : -Math.PI / 2
+  // JV sits on the east side of the round table and looks west. Marj sits west and looks east.
+  if (zone === 'conference') return slug === 'jv' ? -Math.PI / 2 : Math.PI / 2
   if (zone === 'away') return 0
   if (slug === 'jv' || slug === 'marj') return Math.PI
   if (slug === 'alex' || slug === 'sage' || slug === 'dev') return 0
@@ -22,7 +23,16 @@ export function seatYaw(slug: string, zone: string): number {
   return Math.PI
 }
 
+/** Face the counter, the bookshelf, or the lounge coffee table once a wander stops. */
+export function facingForSpot(at: Vec): number {
+  if (at.y < 4.9) return Math.PI
+  if (at.x > 8.7 && at.x < 11.5 && at.y < 8.3) return Math.atan2(9.25 - at.x, 7.15 - at.y)
+  if (at.y < 9) return 0
+  return Math.atan2(13.45 - at.x, 9.15 - at.y)
+}
+
 export function yawFor(pose: Pose, slug: string): number {
   if (pose.points.length > 1 && pose.traveled < pose.length - 0.05) return pathYaw(pose.points, pose.traveled)
+  if (pose.zone === 'lounge' && pose.points.length > 0) return facingForSpot(pose.points[pose.points.length - 1]!)
   return seatYaw(slug, pose.zone)
 }

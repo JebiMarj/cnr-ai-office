@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { BrandMark, brand } from '../src/brand.tsx'
 import { buildDemoSnapshot } from '../src/data/demoSeed.ts'
 import { OfficeFloor } from '../src/floor/OfficeFloor.tsx'
+import { seatYaw } from '../src/floor/scene/facing.ts'
 import { isExecutive } from '../src/data/shift.ts'
 import {
   CORRIDOR_Y,
@@ -11,6 +12,7 @@ import {
   WALK_SPEED,
   advancePose,
   buildFloorLabels,
+  deskNameplates,
   deskPoint,
   dwellFor,
   idlePlaces,
@@ -130,19 +132,18 @@ describe('label layout', () => {
     return map
   }
 
-  it('omits the desk name while that person is standing there', () => {
+  it('keeps one chip on the person and a nameplate only on an empty desk', () => {
     const specs = buildFloorLabels(agents, personAt(), null)
     const ids = specs.map((spec) => spec.id)
+    expect(ids.filter((id) => id.startsWith('desk:'))).toEqual([])
     expect(ids).toContain('person:alex')
-    expect(ids).not.toContain('desk:alex')
-    expect(ids).toContain('desk:tech')
-    expect(ids).not.toContain('person:tech')
     expect(ids).toContain('person:sage')
-    expect(ids).toContain('desk:sage')
+    expect(ids).not.toContain('person:tech')
     expect(ids).toContain('person:jv')
-    expect(ids).not.toContain('desk:jv')
     expect(ids).toContain('person:marj')
-    expect(ids).not.toContain('desk:marj')
+    expect(deskNameplates(agents, personAt()).map((plate) => plate.slug).sort()).toEqual(['sage', 'tech'])
+    expect(seatYaw('jv', 'conference')).toBeCloseTo(-Math.PI / 2)
+    expect(seatYaw('marj', 'conference')).toBeCloseTo(Math.PI / 2)
   })
 
   it('keeps chips apart when idle bots are spread through the new rooms', () => {
@@ -197,11 +198,12 @@ describe('floor rendering', () => {
     expect(html).toContain('Wood floor')
     expect(html).toContain('Tile floor')
     expect(html).toContain('data-floor-label="person:alex"')
-    expect(html).not.toContain('data-floor-label="desk:alex"')
-    expect(html).toContain('data-floor-label="desk:tech"')
+    expect(html).not.toContain('data-floor-label="desk:')
     expect(html).not.toContain('data-floor-label="person:tech"')
     expect(html).toContain('data-floor-label="person:sage"')
-    expect(html).toContain('data-floor-label="desk:sage"')
+    expect(html).toContain('data-nameplate="tech"')
+    expect(html).toContain('data-nameplate="sage"')
+    expect(html).not.toContain('data-nameplate="alex"')
     expect(html).toContain('Executive assistant')
     expect(html).toContain('Weekly client handoff is ready for review')
     expect(html).not.toContain('data-character="tech"')

@@ -4,12 +4,14 @@ import { lookFor } from './looks.ts'
 import {
   bubbleText,
   buildFloorLabels,
+  deskPoint,
   isWaiting,
   placementFor,
   poseView,
   retarget,
   settle,
   shortRole,
+  showDeskLabel,
   stepPoses,
   zoneFor,
   type FloorAgent,
@@ -120,9 +122,17 @@ function FloorRoster({
         const view = pose ? poseView(pose) : null
         const place = placementFor(agent)
         const occupancy = place.zone === 'offline' ? 'empty' : place.zone === 'desk' ? 'here' : 'away'
+        const plate = showDeskLabel(view ? { x: view.x, y: view.y } : null, deskPoint(agent.slug, agent.isBoss))
         return (
           <li key={agent.slug}>
-            <button type="button" data-desk={agent.slug} data-occupancy={occupancy} data-status={agent.status} onClick={() => onSelect(agent.slug)}>
+            <button
+              type="button"
+              data-desk={agent.slug}
+              data-occupancy={occupancy}
+              data-status={agent.status}
+              data-nameplate={plate ? agent.slug : undefined}
+              onClick={() => onSelect(agent.slug)}
+            >
               {floorTitle(agent)} desk
             </button>
             {view && pose ? (

@@ -1,7 +1,7 @@
-import { forwardRef, useImperativeHandle, useRef, type RefObject } from 'react'
-import { ACESFilmicToneMapping, Vector3 } from 'three'
+import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react'
+import { ACESFilmicToneMapping, SRGBColorSpace, Vector3, type DirectionalLight, type PerspectiveCamera } from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrbitControls } from '@react-three/drei'
+import { ContactShadows, OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { isWaiting } from '../motion.ts'
 import {
@@ -12,8 +12,8 @@ import {
   type Pose,
   type Vec,
 } from '../motion.ts'
-import { CAMERA_HOME } from './palette.ts'
-import { OfficeWorld } from './Rooms.tsx'
+import { CAMERA_HOME, SHOTS, frameOffice } from './palette.ts'
+import { DeskNameplates, OfficeWorld } from './Rooms.tsx'
 import { PersonMesh } from './PersonMesh.tsx'
 import { yawFor } from './facing.ts'
 
@@ -27,41 +27,70 @@ type Props = {
   labelRoot: RefObject<HTMLDivElement | null>
 }
 
+type Frame = { position: [number, number, number]; target: [number, number, number] }
+
+function shotFrame(): Frame | null {
+  if (typeof window === 'undefined') return null
+  const shot = new URLSearchParams(window.location.search).get('shot')
+  return shot && SHOTS[shot] ? SHOTS[shot] : null
+}
+
+function viewFor(aspect: number): Frame {
+  return shotFrame() ?? frameOffice(aspect)
+}
+
+function applyFrame(camera: PerspectiveCamera, controls: OrbitControlsImpl, frame: Frame) {
+  camera.fov = 33
+  camera.position.set(...frame.position)
+  camera.updateProjectionMatrix()
+  controls.target.set(...frame.target)
+  controls.update()
+}
+
 const OfficeCanvas = forwardRef<OfficeView, Props>(function OfficeCanvas(props, ref) {
   const controls = useRef<OrbitControlsImpl>(null)
   useImperativeHandle(ref, () => ({
     reset() {
       const orbit = controls.current
-      if (!orbit) return
-      orbit.object.position.set(...CAMERA_HOME.position)
-      orbit.target.set(...CAMERA_HOME.target)
-      orbit.update()
+      const camera = orbit?.object
+      if (!orbit || !camera || !('isPerspectiveCamera' in camera)) return
+      applyFrame(camera as PerspectiveCamera, orbit, frameOffice(camera.aspect || 1.55))
     },
   }))
   return (
     <Canvas
       className="office-canvas"
-      shadows={false}
-      dpr={[1, 1.25]}
-      camera={{ position: CAMERA_HOME.position, fov: 36, near: 0.08, far: 80 }}
-      gl={{ antialias: true, alpha: false, preserveDrawingBuffer: true, toneMapping: ACESFilmicToneMapping, toneMappingExposure: 1.05 }}
+      shadows
+      dpr={[1, 1.5]}
+      camera={{ position: CAMERA_HOME.position, fov: 33, near: 0.08, far: 90 }}
+      gl={{
+        antialias: true,
+        alpha: false,
+        preserveDrawingBuffer: true,
+        toneMapping: ACESFilmicToneMapping,
+        toneMappingExposure: 1.08,
+        outputColorSpace: SRGBColorSpace,
+      }}
     >
-      <color attach="background" args={['#100c14']} />
-      <fog attach="fog" args={['#100c14', 22, 42]} />
-      <hemisphereLight args={['#b7c6de', '#4a3428', 1.05]} />
-      <ambientLight intensity={0.55} color="#ffe8d2" />
-      <directionalLight position={[5, 14, 9]} intensity={1.8} color="#ffe0c2" />
+      <color attach="background" args={['#1a1422']} />
+      <hemisphereLight args={['#fff6ea', '#e6d4be', 0.95]} />
+      <ambientLight intensity={0.58} color="#fff3e6" />
+      <KeyLight />
+      <directionalLight position={[-7, 8, -3]} intensity={0.42} color="#d7e3f6" />
+      <ContactShadows position={[8.2, 0.03, 6.1]} opacity={0.28} scale={22} blur={2.4} far={3.2} resolution={512} color="#3a3028" />
       <OfficeWorld agents={props.agents} />
+      <DeskNameplates agents={props.agents} poses={props.poses} />
       <Crew agents={props.agents} poses={props.poses} onSelect={props.onSelect} />
       <OrbitControls
         ref={controls}
         makeDefault
         enableDamping
         dampingFactor={0.08}
-        minDistance={3.2}
-        maxDistance={24}
-        minPolarAngle={0.35}
+        minDistance={3.4}
+        maxDistance={32}
+        minPolarAngle={0.28}
         maxPolarAngle={Math.PI / 2.08}
+        target={CAMERA_HOME.target}
       />
       <Aim />
       <LabelProjector agents={props.agents} poses={props.poses} selected={props.selected} labelRoot={props.labelRoot} />
@@ -71,15 +100,44 @@ const OfficeCanvas = forwardRef<OfficeView, Props>(function OfficeCanvas(props, 
 
 export default OfficeCanvas
 
+function KeyLight() {
+  const light = useRef<DirectionalLight>(null)
+  useLayoutEffect(() => {
+    const lamp = light.current
+    if (!lamp) return
+    lamp.target.position.set(8.2, 0, 5.8)
+    lamp.target.updateMatrixWorld(true)
+  }, [])
+  return (
+    <directionalLight
+      ref={light}
+      position={[8.4, 16.5, 12.5]}
+      intensity={2.55}
+      color="#fff3e4"
+      castShadow
+      shadow-mapSize-width={2048}
+      shadow-mapSize-height={2048}
+      shadow-bias={-0.00035}
+      shadow-normalBias={0.045}
+      shadow-camera-near={2}
+      shadow-camera-far={36}
+      shadow-camera-left={-13}
+      shadow-camera-right={13}
+      shadow-camera-top={12}
+      shadow-camera-bottom={-12}
+    />
+  )
+}
+
 function Aim() {
   const camera = useThree((state) => state.camera)
+  const size = useThree((state) => state.size)
   const controls = useThree((state) => state.controls as unknown as OrbitControlsImpl | null)
   const ready = useRef(false)
   useFrame(() => {
-    if (ready.current || !controls) return
-    camera.position.set(...CAMERA_HOME.position)
-    controls.target.set(...CAMERA_HOME.target)
-    controls.update()
+    if (ready.current || !controls || size.width < 2) return
+    if (!('isPerspectiveCamera' in camera)) return
+    applyFrame(camera as PerspectiveCamera, controls, viewFor(size.width / Math.max(1, size.height)))
     ready.current = true
   })
   return null
@@ -150,7 +208,7 @@ function LabelProjector({
       personAt[agent.slug] = view ? { x: view.x, y: view.y } : null
     }
     const toScreen = (point: Vec) => {
-      scratch.current.set(point.x, 1.62, point.y)
+      scratch.current.set(point.x, 1.82, point.y)
       scratch.current.project(camera)
       return {
         x: (scratch.current.x * 0.5 + 0.5) * size.width,
@@ -159,9 +217,14 @@ function LabelProjector({
     }
     const specs = buildFloorLabels(agents, personAt, selected, toScreen).map((spec) => ({
       ...spec,
-      lift: spec.h > 20 ? 18 : 8,
+      lift: spec.h > 20 ? 20 : 12,
     }))
     const placed = placeLabels(specs)
+    const seen = new Set(placed.map((label) => label.id))
+    root.querySelectorAll<HTMLElement>('[data-floor-label]').forEach((el) => {
+      const id = el.dataset.floorLabel
+      if (id && !seen.has(id)) el.style.display = 'none'
+    })
     for (const label of placed) {
       const el = root.querySelector<HTMLElement>(`[data-floor-label="${label.id}"]`)
       if (!el) continue

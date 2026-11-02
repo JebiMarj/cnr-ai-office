@@ -100,9 +100,11 @@ const LOUNGE_SPOTS: Vec[] = [
 
 const LOUNGE_ORDER = ['alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia']
 
-const CONF_SEATS: Record<string, Vec> = {
-  jv: { x: 15.15, y: 4.7 },
-  marj: { x: 13.35, y: 4.7 },
+export const MEETING_TABLE: Vec = { x: 14.25, y: 4.7 }
+
+export const CONF_SEATS: Record<string, Vec> = {
+  jv: { x: 15.48, y: 4.7 },
+  marj: { x: 13.02, y: 4.7 },
 }
 
 export type IdlePose = 'sit' | 'stand'
@@ -236,6 +238,10 @@ export function idlePlaces(): readonly IdlePlace[] {
   return PLACES
 }
 
+export function seatsIn(room: IdleRoom): readonly IdlePlace[] {
+  return PLACES.filter((place) => place.room === room)
+}
+
 const ROOM_HIT_ORDER: RoomId[] = ['nook', 'office', 'vp', 'pantry', 'storage', 'restroom', 'conference', 'work', 'lounge']
 
 export function roomOf(point: Vec): RoomId | null {
@@ -339,6 +345,12 @@ export type LabelSpec = {
 
 export type PlacedLabel = LabelSpec & { x: number; y: number }
 
+export type DeskPlate = {
+  slug: string
+  name: string
+  point: Vec
+}
+
 const NEAR_DESK = 1.45
 
 export function labelSize(name: string, expanded: boolean): { w: number; h: number } {
@@ -384,41 +396,39 @@ export function buildFloorLabels(
 ): LabelSpec[] {
   const specs: LabelSpec[] = []
   for (const agent of agents) {
-    const desk = deskPoint(agent.slug, agent.isBoss)
     const person = personAt[agent.slug] ?? null
     const expanded = selected === agent.slug
     const title = floorTitle(agent)
     if (person) {
       const screen = toScreen(person)
       const size = labelSize(title, expanded)
-      const stagger = agent.slug.length % 2 === 0 ? 12 : -12
       specs.push({
         id: `person:${agent.slug}`,
         kind: 'person',
         slug: agent.slug,
-        anchorX: screen.x + stagger,
+        anchorX: screen.x,
         anchorY: screen.y,
         w: size.w,
         h: size.h,
         lift: expanded ? 96 : 78,
       })
     }
-    if (showDeskLabel(person, desk)) {
-      const screen = toScreen(desk)
-      const size = labelSize(title, false)
-      specs.push({
-        id: `desk:${agent.slug}`,
-        kind: 'desk',
-        slug: agent.slug,
-        anchorX: screen.x,
-        anchorY: screen.y,
-        w: size.w,
-        h: size.h,
-        lift: 8,
-      })
-    }
   }
   return specs
+}
+
+/** A desk with nobody standing at it. Drawn as a nameplate, not a second chip. */
+export function deskNameplates(
+  agents: Array<{ slug: string; name: string; isBoss: boolean }>,
+  personAt: Record<string, Vec | null>,
+): DeskPlate[] {
+  const plates: DeskPlate[] = []
+  for (const agent of agents) {
+    const point = deskPoint(agent.slug, agent.isBoss)
+    if (!showDeskLabel(personAt[agent.slug] ?? null, point)) continue
+    plates.push({ slug: agent.slug, name: agent.name, point })
+  }
+  return plates
 }
 
 export function loungeSlot(slug: string): number {
