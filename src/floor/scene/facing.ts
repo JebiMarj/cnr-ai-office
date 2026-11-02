@@ -32,6 +32,10 @@ export function facingForSpot(at: Vec): number {
 }
 
 export function yawFor(pose: Pose, slug: string): number {
+  if ((pose.errand === 1 || pose.errand === 3) && pose.points.length > 1 && pose.traveled < pose.length - 0.05) {
+    return pathYaw(pose.points, pose.traveled)
+  }
+  if (pose.errand === 2 && pose.points.length > 0) return facingForSpot(pose.points[pose.points.length - 1]!)
   if (pose.points.length > 1 && pose.traveled < pose.length - 0.05) return pathYaw(pose.points, pose.traveled)
   if (pose.zone === 'lounge' && pose.points.length > 0) return facingForSpot(pose.points[pose.points.length - 1]!)
   return seatYaw(slug, pose.zone)

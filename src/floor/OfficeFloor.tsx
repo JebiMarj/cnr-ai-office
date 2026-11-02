@@ -9,6 +9,7 @@ import {
   placementFor,
   poseView,
   retarget,
+  previewWalk,
   settle,
   shortRole,
   showDeskLabel,
@@ -167,7 +168,11 @@ function FloorRoster({
 function usePoses(agents: FloorAgent[]): Pose[] {
   const reduced = useReducedMotion()
   const sig = agents.map((agent) => `${agent.slug}:${agent.status}:${agent.isBoss ? 1 : 0}:${agent.isHuman ? 1 : 0}`).join('|')
-  const [poses, setPoses] = useState(() => settle(agents))
+  const [poses, setPoses] = useState(() => {
+    const base = settle(agents)
+    const walk = requestedWalk()
+    return walk ? previewWalk(base, walk) : base
+  })
   const ref = useRef(poses)
   const agentsRef = useRef(agents)
   agentsRef.current = agents
@@ -195,6 +200,12 @@ function usePoses(agents: FloorAgent[]): Pose[] {
   }, [sig, reduced])
 
   return poses
+}
+
+function requestedWalk(): string | null {
+  if (typeof window === 'undefined') return null
+  const value = new URLSearchParams(window.location.search).get('walk')
+  return value && value.length > 0 ? value : null
 }
 
 function useReducedMotion(): boolean {

@@ -1,8 +1,8 @@
 # C&R AI Office
 
-A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, Marj’s VP office, six labelled desks, a lounge, a rest room, a library, a pantry, a gym, a reception desk, and a conference table. People walk between those zones when their status changes. Idle bots wander the amenity rooms. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
+A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, Marj’s VP office, six labelled desks, a lounge, a rest room, a library, a pantry, a gym, a reception desk, and a conference table. People walk between those zones when their status changes. On a normal shift they sit at their own desks and step out for a short break about every ten minutes. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
 
-The page has no login. Anyone with the link can read it. Bots write through one edge function. The anon key cannot insert, update, or delete.
+The page has no login. Anyone with the link can read it. Bots write through one edge function. The anon key cannot insert, update, or delete. People who are on the floor sit at their own desk. About every ten minutes, each of them takes a short walk to the kitchenette, the lounge, or another desk, then sits back down.
 
 ## Preview without Supabase
 
@@ -156,19 +156,24 @@ Zones come from the effective status:
 
 | Who | Status | Where |
 | --- | --- | --- |
-| Staff | `working`, `waiting_on_jv` | Their desk. Waiting shows a gold badge. |
-| Staff | `idle` | Wandering the lounge, reading nook, and kitchenette. Reduced motion keeps them in a seat. |
+| Staff | `working`, `waiting_on_jv`, `idle` | Their own desk, facing the monitor, with a small typing motion. Waiting still shows a gold badge. Idle still reads as idle. |
 | Staff | `offline` | Hidden. The desk stays, dimmed. |
-| JV | `online` | Corner office |
-| Marj | `online` | VP office |
+| JV | `online` | Corner office desk |
+| Marj | `online` | VP office desk |
 | JV, Marj | `in_meeting` | Conference table, separate seats |
 | JV, Marj | `away` | The landing outside the door |
 
-Humans are `is_human`, ordered by `floor_rank` (JV 1, Marj 2, then the bots). A status change builds a walkway path and moves the figure along it. Idle bots then follow a seeded tour of the amenity rooms. `prefers-reduced-motion: reduce` snaps to the destination and leaves idle bots seated. Click a person or a desk to open the detail card. The activity feed and approvals stay in the board, which starts open on a wide screen and closed on a narrow one. The header census counts bots only.
+Anyone seated at their own desk (staff who are not offline, and JV or Marj when they are online) stands up about every 10 minutes. The first breaks are staggered, with a little random jitter, so the floor does not empty at once. The walk lasts about 30–60 seconds and ends at the kitchenette, the lounge, or beside another person’s desk. They then walk back and sit down. `prefers-reduced-motion: reduce` keeps them in the chair and skips those breaks.
+
+Humans are `is_human`, ordered by `floor_rank` (JV 1, Marj 2, then the bots). A status change still builds a walkway path and moves the figure along it. `?shot=meeting` still frames the conference room. `?walk=dev` (or any slug) starts that person mid-errand, for a still of the walk. Click a person or a desk to open the detail card. The activity feed and approvals stay in the board, which starts open on a wide screen and closed on a narrow one. The header census counts bots only.
 
 ## Art and licences
 
-The office is an original Three.js scene (procedural geometry and materials, no downloaded models and no paid assets). `@react-three/fiber` and `@react-three/drei` load in a separate chunk. People are stylised 3D figures. Drag to orbit, scroll or pinch to zoom, and use Reset view to return to the default camera. If WebGL is unavailable the page explains that and the side board still works.
+The office is an original Three.js scene. Furniture, glass, and people are procedural geometry. People use smooth capsule limbs, heads with hair, simple faces, and fitted clothes: JV in a dark suit and tie, Marj in a navy blazer. No downloaded character models and no paid assets.
+
+Image-based lighting uses Poly Haven’s [Studio Small 03](https://polyhaven.com/a/studio_small_03) 1k HDR by Greg Zaal, licensed CC0, committed at `public/hdri/studio_small_03_1k.hdr`. The page does not fetch it from a CDN. `@react-three/postprocessing` adds soft ambient occlusion and a gentle bloom on the neon accents, inside the same lazy 3D chunk as `@react-three/fiber` and `@react-three/drei`.
+
+Drag to orbit, scroll or pinch to zoom, and use Reset view to return to the default camera. If WebGL is unavailable the page explains that and the side board still works.
 
 The plan follows a real office: JV’s corner office and Marj’s VP office on the north wall, a kitchenette, storage, a restroom, a meeting room, back-to-back work pods, and a lounge with a curved reception desk. A reading nook sits in the lounge. A separate gym and library were left out so the plan could stay close to that reference.
 

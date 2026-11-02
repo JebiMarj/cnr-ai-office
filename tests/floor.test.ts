@@ -26,6 +26,11 @@ import {
   route,
   sameWalkway,
   samplePath,
+  errandDestination,
+  errandTarget,
+  initialSeatedSpan,
+  isOnDuty,
+  nextSeatedSpan,
   settle,
   stepPoses,
   toFloorAgents,
@@ -39,8 +44,15 @@ describe('zone mapping', () => {
   it('maps each status onto a zone', () => {
     expect(zoneFor({ isBoss: false, status: 'working' })).toBe('desk')
     expect(zoneFor({ isBoss: false, status: 'waiting_on_jv' })).toBe('desk')
-    expect(zoneFor({ isBoss: false, status: 'idle' })).toBe('lounge')
+    expect(zoneFor({ isBoss: false, status: 'idle' })).toBe('desk')
     expect(zoneFor({ isBoss: false, status: 'offline' })).toBe('offline')
+    expect(isOnDuty('working')).toBe(true)
+    expect(isOnDuty('idle')).toBe(true)
+    expect(isOnDuty('waiting_on_jv')).toBe(true)
+    expect(isOnDuty('online')).toBe(true)
+    expect(isOnDuty('offline')).toBe(false)
+    expect(isOnDuty('away')).toBe(false)
+    expect(isOnDuty('in_meeting')).toBe(false)
     expect(zoneFor({ isBoss: true, status: 'online' })).toBe('desk')
     expect(zoneFor({ isBoss: true, status: 'in_meeting' })).toBe('conference')
     expect(zoneFor({ isBoss: true, status: 'away' })).toBe('away')
@@ -51,7 +63,8 @@ describe('zone mapping', () => {
     const bySlug = Object.fromEntries(agents.map((agent) => [agent.slug, agent]))
     expect(placementFor(bySlug.jv!).zone).toBe('desk')
     expect(placementFor(bySlug.alex!).zone).toBe('desk')
-    expect(placementFor(bySlug.sage!).zone).toBe('lounge')
+    expect(placementFor(bySlug.sage!).zone).toBe('desk')
+    expect(placementFor(bySlug.sage!).point).toEqual(deskPoint('sage', false))
     expect(placementFor(bySlug.tech!)).toEqual({ zone: 'offline', point: null })
     expect(placementFor({ slug: 'jv', isBoss: true, status: 'in_meeting' }).zone).toBe('conference')
     expect(placementFor({ slug: 'jv', isBoss: true, status: 'away' }).zone).toBe('away')
@@ -72,9 +85,9 @@ describe('walking', () => {
   const agents = toFloorAgents(buildDemoSnapshot(at), at)
   const dev = agents.find((agent) => agent.slug === 'dev')!
 
-  it('follows the walkway from a desk to the lounge', () => {
+  it('follows the walkway from a desk to the kitchenette', () => {
     const from = placementFor(dev).point!
-    const to = placementFor({ ...dev, status: 'idle' }).point!
+    const to = { x: 9.5, y: 1.35 }
     const points = route(from, to)
     expect(points[0]).toEqual(from)
     expect(points[points.length - 1]).toEqual(to)
@@ -92,20 +105,21 @@ describe('walking', () => {
 
   it('starts a walk when status changes and snaps under reduced motion', () => {
     const start = settle(agents)
-    const next = agents.map((agent) => (agent.slug === 'dev' ? { ...agent, status: 'idle' } : agent))
-    const devPose = retarget(start, next, false).find((pose) => pose.slug === 'dev')!
-    expect(devPose.zone).toBe('lounge')
-    expect(devPose.traveled).toBe(0)
-    expect(devPose.length).toBeGreaterThan(1)
-    const stepped = advancePose(devPose, 0.4, false)
+    const next = agents.map((agent) => (agent.slug === 'marj' ? { ...agent, status: 'in_meeting' } : agent))
+    const marjPose = retarget(start, next, false).find((pose) => pose.slug === 'marj')!
+    expect(marjPose.zone).toBe('conference')
+    expect(marjPose.errand).toBe(0)
+    expect(marjPose.traveled).toBe(0)
+    expect(marjPose.length).toBeGreaterThan(1)
+    const stepped = advancePose(marjPose, 0.4, false)
     expect(stepped.traveled).toBeCloseTo(WALK_SPEED * 0.4)
     expect(poseView(stepped)?.walking).toBe(true)
-    const snapped = retarget(start, next, true).find((pose) => pose.slug === 'dev')!
+    const snapped = retarget(start, next, true).find((pose) => pose.slug === 'marj')!
     expect(snapped.length).toBe(0)
     expect(poseView(snapped)?.walking).toBe(false)
-    expect(poseView(snapped)).toMatchObject(placementFor({ ...dev, status: 'idle' }).point!)
-    const finished = advancePose(devPose, 30, true)
-    expect(finished.traveled).toBe(devPose.length)
+    expect(poseView(snapped)).toMatchObject(placementFor({ ...agents.find((agent) => agent.slug === 'marj')!, status: 'in_meeting' }).point!)
+    const finished = advancePose(marjPose, 30, true)
+    expect(finished.traveled).toBe(marjPose.length)
     expect(poseView(finished)?.walking).toBe(false)
   })
 
@@ -141,7 +155,7 @@ describe('label layout', () => {
     expect(ids).not.toContain('person:tech')
     expect(ids).toContain('person:jv')
     expect(ids).toContain('person:marj')
-    expect(deskNameplates(agents, personAt()).map((plate) => plate.slug).sort()).toEqual(['sage', 'tech'])
+    expect(deskNameplates(agents, personAt()).map((plate) => plate.slug).sort()).toEqual(['tech'])
     expect(seatYaw('jv', 'conference')).toBeCloseTo(-Math.PI / 2)
     expect(seatYaw('marj', 'conference')).toBeCloseTo(Math.PI / 2)
   })
@@ -179,7 +193,8 @@ describe('floor rendering', () => {
     const html = renderToStaticMarkup(createElement(OfficeFloor, { agents, onSelect: () => {}, selectedSlug: null }))
     expect(html).toContain('data-testid="office-floor"')
     expect(html).toContain('data-character="sage"')
-    expect(html).toContain('data-zone="lounge"')
+    expect(html).toContain('data-zone="desk"')
+    expect(html).not.toContain('data-zone="lounge"')
     expect(html).toContain('data-character="alex"')
     expect(html).toContain('data-waiting="true"')
     expect(html).toContain('data-character="jv"')
@@ -202,7 +217,7 @@ describe('floor rendering', () => {
     expect(html).not.toContain('data-floor-label="person:tech"')
     expect(html).toContain('data-floor-label="person:sage"')
     expect(html).toContain('data-nameplate="tech"')
-    expect(html).toContain('data-nameplate="sage"')
+    expect(html).not.toContain('data-nameplate="sage"')
     expect(html).not.toContain('data-nameplate="alex"')
     expect(html).toContain('Executive assistant')
     expect(html).toContain('Weekly client handoff is ready for review')
@@ -212,23 +227,22 @@ describe('floor rendering', () => {
   })
 
   it('marks the midpoint of a walk', () => {
-    const next = agents.map((agent) => (agent.slug === 'dev' ? { ...agent, status: 'idle' } : agent))
+    const next = agents.map((agent) => (agent.slug === 'marj' ? { ...agent, status: 'in_meeting' } : agent))
     const poses = retarget(settle(agents), next, false).map((pose) =>
-      pose.slug === 'dev' ? { ...pose, traveled: pose.length / 2 } : pose,
+      pose.slug === 'marj' ? { ...pose, traveled: pose.length / 2 } : pose,
     )
     const html = renderToStaticMarkup(createElement(OfficeFloor, { agents: next, onSelect: () => {}, poses }))
-    expect(html).toContain('data-character="dev"')
+    expect(html).toContain('data-character="marj"')
     expect(html).toContain('data-walking="true"')
     expect(html).toContain('data-gait="walk"')
-    expect(html).toContain('data-zone="lounge"')
-    const dev = poses.find((pose) => pose.slug === 'dev')!
-    const view = poseView({ ...dev, traveled: dev.length / 2 })!
+    expect(html).toContain('data-zone="conference"')
+    const marj = poses.find((pose) => pose.slug === 'marj')!
+    const view = poseView({ ...marj, traveled: marj.length / 2 })!
     expect(html).toContain(`data-x="${view.x.toFixed(2)}"`)
   })
 })
 
 describe('idle wander', () => {
-  const agents = toFloorAgents(buildDemoSnapshot(at), at)
   const crew = ['alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia']
 
   it('tours seeded rooms without two people sharing a stop', () => {
@@ -260,25 +274,117 @@ describe('idle wander', () => {
     expect(roomOf(wanderBeat('sage', 0).point)).toBe('lounge')
   })
 
-  it('leaves a seat after the pause and stays seated when motion is reduced', () => {
-    const start = settle(agents)
-    const sage = start.find((pose) => pose.slug === 'sage')!
-    expect(sage.body).toBe('sit')
-    const held = stepPoses(start, agents, sage.dwell * 0.4, false)
+  it('keeps the seeded amenity tour available for the room map', () => {
+    expect(wanderBeat('sage', 1).room).not.toBe('lounge')
+    expect(roomOf(wanderBeat('dev', 0).point)).toBe('lounge')
+  })
+})
+
+describe('work breaks', () => {
+  const agents = toFloorAgents(buildDemoSnapshot(at), at)
+  const roster = ['jv', 'marj', 'alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia']
+
+  it('seats everyone who is not offline or away at their own desk', () => {
+    const poses = settle(agents)
+    for (const agent of agents) {
+      const pose = poses.find((item) => item.slug === agent.slug)!
+      if (agent.status === 'offline') {
+        expect(poseView(pose)).toBeNull()
+        continue
+      }
+      expect(pose.errand).toBe(0)
+      expect(pose.body).toBe('sit')
+      expect(pose.points[0]).toEqual(deskPoint(agent.slug, agent.isBoss))
+      expect(pose.zone).toBe('desk')
+    }
+  })
+
+  it('staggers the first break across the ten-minute cycle', () => {
+    const spans = roster.map((slug) => initialSeatedSpan(slug))
+    const sorted = [...spans].sort((a, b) => a - b)
+    for (let index = 1; index < sorted.length; index += 1) {
+      expect(sorted[index]! - sorted[index - 1]!).toBeGreaterThan(40)
+    }
+    expect(Math.min(...spans)).toBeGreaterThan(10)
+    expect(Math.max(...spans) - Math.min(...spans)).toBeGreaterThan(400)
+    for (const slug of roster) {
+      const gap = nextSeatedSpan(slug, 1)
+      expect(gap).toBeGreaterThan(500)
+      expect(gap).toBeLessThan(600)
+      expect(errandTarget(slug, 0)).toBeGreaterThanOrEqual(30)
+      expect(errandTarget(slug, 0)).toBeLessThanOrEqual(60)
+    }
+  })
+
+  it('visits the kitchenette, the lounge, and another desk', () => {
+    const kinds = new Set(roster.flatMap((slug) => [0, 1, 2].map((cycle) => errandDestination(slug, cycle).kind)))
+    expect(kinds).toEqual(new Set(['pantry', 'lounge', 'desk']))
+    const visit = errandDestination('jv', 2)
+    expect(visit.kind).toBe('desk')
+    expect(visit.id.startsWith('visit:')).toBe(true)
+    expect(visit.id).not.toBe('visit:jv')
+  })
+
+  it('walks out for about 30–60s and sits back down', () => {
+    const dev = agents.find((agent) => agent.slug === 'dev')!
+    let poses = settle([dev]).map((pose) => ({ ...pose, dwell: 0.05 }))
+    let away = 0
+    let left = false
+    let back = false
+    for (let step = 0; step < 900; step += 1) {
+      const stepped = stepPoses(poses, [dev], 0.1, false)
+      poses = stepped.poses
+      const now = poses[0]!
+      if (now.errand !== 0) {
+        left = true
+        away += 0.1
+        continue
+      }
+      if (!left) continue
+      back = true
+      expect(now.body).toBe('sit')
+      expect(now.points[0]).toEqual(deskPoint('dev', false))
+      expect(now.zone).toBe('desk')
+      break
+    }
+    expect(left).toBe(true)
+    expect(back).toBe(true)
+    expect(away).toBeGreaterThanOrEqual(29)
+    expect(away).toBeLessThanOrEqual(62)
+  })
+
+  it('stays in the chair when motion is reduced', () => {
+    const dev = agents.find((agent) => agent.slug === 'dev')!
+    const seated = settle([dev]).map((pose) => ({ ...pose, dwell: 0 }))
+    const held = stepPoses(seated, [dev], 40, true)
     expect(held.paint).toBe(false)
-    expect(held.poses.find((pose) => pose.slug === 'sage')!.length).toBe(0)
-    const left = stepPoses(held.poses, agents, sage.dwell, false)
-    const moving = left.poses.find((pose) => pose.slug === 'sage')!
-    expect(left.paint).toBe(true)
-    expect(moving.body).toBe('walk')
-    expect(moving.points[moving.points.length - 1]).toEqual(wanderBeat('sage', 1).point)
-    const parked = stepPoses(left.poses, agents, 30, true)
-    expect(parked.paint).toBe(false)
-    expect(parked.poses.find((pose) => pose.slug === 'sage')!.body).toBe('walk')
-    const snapped = retarget(left.poses, agents, true).find((pose) => pose.slug === 'sage')!
-    expect(snapped.length).toBe(0)
+    expect(held.poses[0]!.errand).toBe(0)
+    expect(held.poses[0]!.body).toBe('sit')
+    const walking = seated.map((pose) => ({
+      ...pose,
+      errand: 1 as const,
+      body: 'walk' as const,
+      length: 4,
+      traveled: 1,
+      points: [deskPoint('dev', false), { x: 9.5, y: 1.35 }],
+    }))
+    const snapped = retarget(walking, [dev], true)[0]!
+    expect(snapped.errand).toBe(0)
     expect(snapped.body).toBe('sit')
-    expect(roomOf(snapped.points[0]!)).toBe('lounge')
+    expect(snapped.length).toBe(0)
+    expect(snapped.points[0]).toEqual(deskPoint('dev', false))
+  })
+
+  it('keeps meetings at the table and offline people hidden', () => {
+    const start = settle(agents)
+    const meeting = agents.map((agent) => (agent.slug === 'jv' ? { ...agent, status: 'in_meeting' } : agent))
+    const jv = retarget(start, meeting, false).find((pose) => pose.slug === 'jv')!
+    expect(jv.zone).toBe('conference')
+    expect(jv.errand).toBe(0)
+    expect(jv.length).toBeGreaterThan(1)
+    expect(poseView(start.find((pose) => pose.slug === 'tech')!)).toBeNull()
+    const away = retarget(start, agents.map((agent) => (agent.slug === 'marj' ? { ...agent, status: 'away' } : agent)), false)
+    expect(away.find((pose) => pose.slug === 'marj')!.zone).toBe('away')
   })
 })
 

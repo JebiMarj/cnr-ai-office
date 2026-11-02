@@ -7,8 +7,9 @@ import type { OfficeSnapshot } from '../data/types.ts'
  * Floor plan in metres. x grows east and y grows south, matching the
  * reference office: offices and kitchen along the north, work pods to
  * the southwest, lounge and reception to the southeast.
- * The 3D view treats y as z. Idle bots tour the lounge, reading nook,
- * and kitchenette on a seeded walkway.
+ * The 3D view treats y as z. People who are on the floor sit at their
+ * own desk and, about every ten minutes, take a short errand.
+ * A seeded amenity tour is still available for the idle-room map.
  */
 
 export type Vec = { x: number; y: number }
@@ -41,6 +42,10 @@ export type Pose = {
   /** Index into that person's seeded tour. */
   beat: number
   body: BodyPose
+  /** 0 at the home seat, 1 walking out, 2 visiting, 3 walking back. */
+  errand: 0 | 1 | 2 | 3
+  /** Which break this is. Changes the stop and the next gap. */
+  cycle: number
 }
 
 export const TILE_W = 68
@@ -295,13 +300,17 @@ export function pathLength(points: Vec[]): number {
   return total
 }
 
+/** On the floor and expected at a desk. Meetings, away, and offline keep their own rules. */
+export function isOnDuty(status: string): boolean {
+  return status !== 'offline' && status !== 'away' && status !== 'in_meeting'
+}
+
 export function zoneFor(agent: { isBoss: boolean; isHuman?: boolean; status: string }): ZoneId {
   if (isExecutive(agent)) {
     if (agent.status === 'in_meeting') return 'conference'
     if (agent.status === 'away') return 'away'
     return 'desk'
   }
-  if (agent.status === 'idle') return 'lounge'
   if (agent.status === 'offline') return 'offline'
   return 'desk'
 }
@@ -557,7 +566,6 @@ function restBody(zone: ZoneId): BodyPose {
 }
 
 function arrived(agent: FloorAgent, point: Vec, zone: ZoneId): Pose {
-  const idle = !isExecutive(agent) && agent.status === 'idle'
   return {
     slug: agent.slug,
     status: agent.status,
@@ -566,9 +574,11 @@ function arrived(agent: FloorAgent, point: Vec, zone: ZoneId): Pose {
     length: 0,
     traveled: 0,
     hideOnArrival: false,
-    dwell: idle ? dwellFor(agent.slug, 0) : 0,
+    dwell: zone === 'desk' && isOnDuty(agent.status) ? initialSeatedSpan(agent.slug) : 0,
     beat: 0,
-    body: idle ? 'sit' : restBody(zone),
+    body: restBody(zone),
+    errand: 0,
+    cycle: 0,
   }
 }
 
@@ -584,6 +594,8 @@ function hidden(agent: FloorAgent): Pose {
     dwell: 0,
     beat: 0,
     body: 'stand',
+    errand: 0,
+    cycle: 0,
   }
 }
 
@@ -600,6 +612,8 @@ function depart(agent: FloorAgent, from: Vec): Pose {
     dwell: 0,
     beat: 0,
     body: 'walk',
+    errand: 0,
+    cycle: 0,
   }
 }
 
@@ -618,6 +632,8 @@ function approach(agent: FloorAgent, from: Vec, to: Vec, zone: ZoneId, reducedMo
     dwell: 0,
     beat: 0,
     body: 'walk',
+    errand: 0,
+    cycle: 0,
   }
 }
 
@@ -640,10 +656,14 @@ export function retarget(current: Pose[], agents: FloorAgent[], reducedMotion: b
   const next = agents.map((agent) => {
     const place = placementFor(agent)
     const prev = bySlug.get(agent.slug)
-    if (reducedMotion && !isExecutive(agent) && agent.status === 'idle' && place.point) {
+    if (!prev) return place.point ? arrived(agent, place.point, place.zone) : hidden(agent)
+    if (
+      reducedMotion &&
+      place.point &&
+      (prev.errand !== 0 || (prev.length > 0.2 && prev.traveled < prev.length - 0.001))
+    ) {
       return arrived(agent, place.point, place.zone)
     }
-    if (!prev) return place.point ? arrived(agent, place.point, place.zone) : hidden(agent)
     if (place.point && prev.zone === place.zone && !prev.hideOnArrival) {
       return prev.status === agent.status ? prev : { ...prev, status: agent.status }
     }
@@ -675,16 +695,22 @@ function evolvePose(pose: Pose, agent: FloorAgent, dt: number): { pose: Pose; pa
     const stepped = advancePose(pose, dt, false)
     const done = stepped.traveled >= stepped.length - 0.001
     if (!done) return { pose: { ...stepped, body: 'walk' }, paint: true }
-    if (!isExecutive(agent) && agent.status === 'idle') {
-      const stop = wanderBeat(agent.slug, pose.beat)
-      return {
-        pose: { ...stepped, body: bodyForPlace(stop), dwell: dwellFor(agent.slug, pose.beat) },
-        paint: true,
-      }
+    if (stepped.errand === 1 || stepped.errand === 3) return { pose: finishErrandLeg(stepped, agent), paint: true }
+    const home = pose.zone === 'desk' && isOnDuty(agent.status)
+    return {
+      pose: { ...stepped, body: restBody(pose.zone), dwell: home ? initialSeatedSpan(agent.slug) : 0, errand: 0 },
+      paint: true,
     }
-    return { pose: { ...stepped, body: restBody(pose.zone), dwell: 0 }, paint: true }
   }
-  if (!isExecutive(agent) && agent.status === 'idle' && pose.points.length > 0 && !pose.hideOnArrival) {
+  if (isOnDuty(agent.status) && pose.zone === 'desk' && pose.errand === 0 && pose.points.length > 0 && !pose.hideOnArrival) {
+    if (pose.dwell > dt) return { pose: { ...pose, dwell: pose.dwell - dt }, paint: false }
+    return { pose: beginErrand(pose, agent), paint: true }
+  }
+  if (pose.errand === 2 && !pose.hideOnArrival) {
+    if (pose.dwell > dt) return { pose: { ...pose, dwell: pose.dwell - dt }, paint: false }
+    return { pose: walkHome(pose, agent), paint: true }
+  }
+  if (!isExecutive(agent) && agent.status === 'idle' && pose.points.length > 0 && !pose.hideOnArrival && pose.zone === 'lounge') {
     if (pose.dwell > dt) return { pose: { ...pose, dwell: pose.dwell - dt }, paint: false }
     const beat = pose.beat + 1
     const stop = wanderBeat(agent.slug, beat)
@@ -822,6 +848,157 @@ function mulberry32(seed: number): () => number {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
+}
+
+/** Staggered so the first breaks do not land on the same second. */
+const BREAK_ROSTER = ['jv', 'marj', 'alex', 'mechanicus', 'sage', 'dev', 'tech', 'gia'] as const
+
+export type ErrandKind = 'pantry' | 'lounge' | 'desk'
+
+export type ErrandDestination = {
+  id: string
+  kind: ErrandKind
+  point: Vec
+  pose: BodyPose
+}
+
+const PANTRY_STOPS: ErrandDestination[] = [
+  { id: 'pantry-coffee', kind: 'pantry', point: { x: 9.5, y: 1.35 }, pose: 'stand' },
+  { id: 'pantry-stool', kind: 'pantry', point: { x: 10.25, y: 3.5 }, pose: 'sit' },
+]
+
+const LOUNGE_ERRANDS: ErrandDestination[] = [
+  { id: 'lounge-a', kind: 'lounge', point: { x: 12.05, y: 8.15 }, pose: 'sit' },
+  { id: 'lounge-b', kind: 'lounge', point: { x: 13.35, y: 8.1 }, pose: 'sit' },
+  { id: 'lounge-c', kind: 'lounge', point: { x: 14.15, y: 10.55 }, pose: 'sit' },
+]
+
+function rosterIndex(slug: string): number {
+  const index = BREAK_ROSTER.indexOf(slug as (typeof BREAK_ROSTER)[number])
+  return index < 0 ? 0 : index
+}
+
+/** Seconds seated before the first break. Spread across the ten-minute cycle. */
+export function initialSeatedSpan(slug: string): number {
+  const rng = mulberry32((hashSlug(slug) + 17) >>> 0)
+  const jitter = (rng() - 0.5) * 20
+  return Math.round((25 + rosterIndex(slug) * 70 + jitter) * 10) / 10
+}
+
+/** Target length of the whole outing, walk included, in seconds. */
+export function errandTarget(slug: string, cycle: number): number {
+  const rng = mulberry32((hashSlug(slug) + cycle * 131 + 9) >>> 0)
+  return Math.round((30 + rng() * 30) * 10) / 10
+}
+
+/** Seated gap after a break. The gap plus the outing is about ten minutes. */
+export function nextSeatedSpan(slug: string, cycle: number): number {
+  const rng = mulberry32((hashSlug(slug) + cycle * 997 + 41) >>> 0)
+  const jitter = (rng() - 0.5) * 24
+  const span = 600 - errandTarget(slug, cycle) + jitter
+  return Math.round(Math.min(590, Math.max(520, span)) * 10) / 10
+}
+
+export function errandDestination(slug: string, cycle: number): ErrandDestination {
+  const kind = (['pantry', 'lounge', 'desk'] as const)[(rosterIndex(slug) + cycle) % 3]!
+  const rng = mulberry32((hashSlug(slug) + cycle * 409 + 3) >>> 0)
+  if (kind === 'pantry') return PANTRY_STOPS[Math.floor(rng() * PANTRY_STOPS.length)]!
+  if (kind === 'lounge') return LOUNGE_ERRANDS[Math.floor(rng() * LOUNGE_ERRANDS.length)]!
+  const hosts = BREAK_ROSTER.filter((name) => name !== slug)
+  const host = hosts[Math.floor(rng() * hosts.length)] ?? 'alex'
+  const desk = DESKS[host] ?? DESKS.alex!
+  const south = host === 'mechanicus' || host === 'tech' || host === 'gia'
+  return {
+    id: `visit:${host}`,
+    kind: 'desk',
+    point: { x: Math.round((desk.x + 0.62) * 100) / 100, y: Math.round((desk.y + (south ? 0.42 : -0.42)) * 100) / 100 },
+    pose: 'stand',
+  }
+}
+
+function plannedStop(slug: string, cycle: number, from: Vec, desk: Vec): ErrandDestination {
+  const preferred = errandDestination(slug, cycle)
+  const walk =
+    (pathLength(route(from, preferred.point)) + pathLength(route(preferred.point, desk))) / WALK_SPEED
+  if (walk <= 46) return preferred
+  return PANTRY_STOPS[0]!
+}
+
+function beginErrand(pose: Pose, agent: FloorAgent): Pose {
+  const desk = deskPoint(agent.slug, agent.isBoss)
+  const from = pointOf(pose) ?? desk
+  const stop = plannedStop(agent.slug, pose.cycle, from, desk)
+  const go = route(from, stop.point)
+  const back = route(stop.point, desk)
+  const walkTime = (pathLength(go) + pathLength(back)) / WALK_SPEED
+  const target = errandTarget(agent.slug, pose.cycle)
+  const dwell = Math.min(Math.max(0.4, target - walkTime), Math.max(0.4, 60 - walkTime))
+  const length = pathLength(go)
+  if (length < 0.2) {
+    return {
+      ...pose,
+      errand: 2,
+      points: [stop.point],
+      length: 0,
+      traveled: 0,
+      body: stop.pose,
+      dwell: Math.min(target, 60),
+      zone: 'desk',
+    }
+  }
+  return { ...pose, errand: 1, points: go, length, traveled: 0, body: 'walk', dwell, zone: 'desk', hideOnArrival: false }
+}
+
+function finishErrandLeg(pose: Pose, agent: FloorAgent): Pose {
+  if (pose.errand === 1) {
+    const desk = deskPoint(agent.slug, agent.isBoss)
+    const stop = plannedStop(agent.slug, pose.cycle, pose.points[0] ?? desk, desk)
+    return { ...pose, errand: 2, body: stop.pose }
+  }
+  const desk = deskPoint(agent.slug, agent.isBoss)
+  return {
+    ...pose,
+    errand: 0,
+    cycle: pose.cycle + 1,
+    body: 'sit',
+    zone: 'desk',
+    points: [desk],
+    length: 0,
+    traveled: 0,
+    dwell: nextSeatedSpan(agent.slug, pose.cycle + 1),
+    hideOnArrival: false,
+  }
+}
+
+function walkHome(pose: Pose, agent: FloorAgent): Pose {
+  const desk = deskPoint(agent.slug, agent.isBoss)
+  const from = pointOf(pose) ?? desk
+  const points = route(from, desk)
+  const length = pathLength(points)
+  if (length < 0.2) return finishErrandLeg({ ...pose, errand: 3, points: [desk], length: 0, traveled: 0 }, agent)
+  return { ...pose, errand: 3, points, length, traveled: 0, body: 'walk', dwell: 0 }
+}
+
+/** Puts one person partway along an errand. Used by `?walk=` screenshots. */
+export function previewWalk(poses: Pose[], slug: string): Pose[] {
+  const target = poses.some((pose) => pose.slug === slug) ? slug : 'dev'
+  return poses.map((pose) => {
+    if (pose.slug !== target) return pose
+    const from = deskPoint(pose.slug, pose.slug === 'jv')
+    const stop = PANTRY_STOPS[0]!
+    const points = route(from, stop.point)
+    const length = pathLength(points)
+    return {
+      ...pose,
+      errand: 1,
+      points,
+      length,
+      traveled: Math.min(length * 0.8, 1.27),
+      body: 'walk',
+      zone: 'desk',
+      dwell: 12,
+    }
+  })
 }
 
 export function toFloorAgents(snapshot: OfficeSnapshot, now: Date): FloorAgent[] {

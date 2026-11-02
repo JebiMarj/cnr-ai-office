@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
+import { RoundedBox } from '@react-three/drei'
 import {
   CanvasTexture,
   DoubleSide,
   ExtrudeGeometry,
+  MeshPhysicalMaterial,
   Shape,
   SRGBColorSpace,
   Texture,
@@ -25,6 +27,19 @@ import { useOfficeMaps, useTiled, type OfficeMaps } from './textures.ts'
 
 const H = 2.62
 const T = 0.16
+
+const glassPane = new MeshPhysicalMaterial({
+  color: '#e7f1f8',
+  roughness: 0.03,
+  metalness: 0,
+  transmission: 0.94,
+  thickness: 0.04,
+  ior: 1.45,
+  transparent: true,
+  opacity: 1,
+  envMapIntensity: 1,
+  depthWrite: false,
+})
 const NORTH = ['alex', 'sage', 'dev'] as const
 const SOUTH = ['mechanicus', 'tech', 'gia'] as const
 const POD_COLOR = [accent.pink, accent.orange, accent.light]
@@ -49,6 +64,7 @@ export function OfficeWorld({ agents }: { agents: FloorAgent[] }) {
       <ReadingNook />
       <Decor />
       <CeilingCans />
+      <SoffitLights />
     </group>
   )
 }
@@ -66,7 +82,7 @@ function Floors({ maps }: { maps: OfficeMaps }) {
       </mesh>
       <mesh position={[8.2, 0.012, 6.1]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[16.3, 12.05]} />
-        <meshStandardMaterial color={night.wood} map={oak ?? undefined} roughness={0.58} metalness={0.02} />
+        <meshStandardMaterial color={night.wood} map={oak ?? undefined} roughness={0.52} metalness={0.06} envMapIntensity={0.42} />
       </mesh>
       <mesh position={[4.15, 0.02, 8.0]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[6.5, 4.15]} />
@@ -74,7 +90,7 @@ function Floors({ maps }: { maps: OfficeMaps }) {
       </mesh>
       <mesh position={[10.6, 0.022, 2.35]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[3.2, 4.15]} />
-        <meshStandardMaterial color="#f7f5f1" map={kitchen ?? undefined} roughness={0.28} metalness={0.04} />
+        <meshStandardMaterial color="#f7f5f1" map={kitchen ?? undefined} roughness={0.16} metalness={0.12} envMapIntensity={0.72} />
       </mesh>
       <mesh position={[15.35, 0.022, 1.55]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[1.55, 2.55]} />
@@ -396,13 +412,9 @@ function Wall({
   const proudZ = d > w ? 0 : 0.04
   return (
     <group>
-      <mesh position={[x + w / 2, H / 2, z + d / 2]} castShadow receiveShadow>
+      <mesh position={[x + w / 2, H / 2, z + d / 2]} castShadow={!glass} receiveShadow material={glass ? glassPane : undefined}>
         <boxGeometry args={[w, H, d]} />
-        {glass ? (
-          <meshStandardMaterial color={night.glass} transparent opacity={0.18} roughness={0.05} metalness={0.04} />
-        ) : (
-          <meshStandardMaterial color={night.wall} map={plaster ?? undefined} roughness={0.9} />
-        )}
+        {glass ? null : <meshStandardMaterial color={night.wall} map={plaster ?? undefined} roughness={0.92} />}
       </mesh>
       {glass ? (
         <mesh position={[x + w / 2, 0.05, z + d / 2]}>
@@ -470,7 +482,7 @@ function WorkPods({ offline }: { offline: Set<string> }) {
       })}
       <mesh position={[4.0, 1.28, 7.72]}>
         <boxGeometry args={[4.5, 0.02, 0.015]} />
-        <meshStandardMaterial color={accent.pink} emissive={accent.pink} emissiveIntensity={0.8} />
+        <meshStandardMaterial color={accent.pink} emissive={accent.pink} emissiveIntensity={2.6} toneMapped={false} />
       </mesh>
     </group>
   )
@@ -482,10 +494,9 @@ function Pod({ slug, color, facing, dim }: { slug: string; color: string; facing
   const deskZ = feet.y + (south ? 0.55 : -0.55)
   return (
     <group>
-      <mesh position={[feet.x, 0.74, deskZ]} castShadow receiveShadow>
-        <boxGeometry args={[1.42, 0.06, 0.72]} />
-        <meshStandardMaterial color="#d7b07a" roughness={0.5} />
-      </mesh>
+      <RoundedBox args={[1.42, 0.06, 0.72]} radius={0.012} smoothness={2} position={[feet.x, 0.74, deskZ]} castShadow receiveShadow>
+        <meshStandardMaterial color="#e0c49a" roughness={0.42} metalness={0.06} envMapIntensity={0.35} />
+      </RoundedBox>
       <mesh position={[feet.x - 0.66, 0.38, deskZ]}>
         <boxGeometry args={[0.06, 0.72, 0.64]} />
         <meshStandardMaterial color="#b8894f" roughness={0.6} />
@@ -526,17 +537,24 @@ function Monitor({
   return (
     <group position={[x, y, z]} rotation={[0, yaw, 0]}>
       <group rotation={[-0.4, 0, 0]}>
-      <mesh position={[0, 0, -0.02]} castShadow>
-        <boxGeometry args={[0.52, 0.32, 0.025]} />
-        <meshStandardMaterial color="#1c2128" metalness={0.4} roughness={0.35} />
-      </mesh>
-      <mesh position={[0, 0, -0.006]}>
+      <RoundedBox args={[0.54, 0.34, 0.028]} radius={0.008} smoothness={2} position={[0, 0, -0.02]} castShadow>
+        <meshStandardMaterial color="#14181e" metalness={0.62} roughness={0.28} envMapIntensity={0.8} />
+      </RoundedBox>
+      <mesh position={[0, 0, -0.004]}>
         <planeGeometry args={[0.46, 0.26]} />
-        <meshStandardMaterial color={dim ? '#2a2824' : '#122033'} emissive={dim ? '#000000' : color} emissiveIntensity={dim ? 0 : 0.7} />
+        <meshStandardMaterial color={dim ? '#2a2824' : '#102033'} emissive={dim ? '#000000' : color} emissiveIntensity={dim ? 0 : 1.85} toneMapped={!dim} />
+      </mesh>
+      <mesh position={[0, 0.145, -0.002]}>
+        <sphereGeometry args={[0.008, 8, 8]} />
+        <meshStandardMaterial color="#1a1e24" roughness={0.4} />
       </mesh>
       <mesh position={[0, -0.2, -0.02]}>
         <boxGeometry args={[0.07, 0.08, 0.05]} />
-        <meshStandardMaterial color="#2c333b" metalness={0.45} roughness={0.4} />
+        <meshStandardMaterial color="#2c333b" metalness={0.55} roughness={0.32} />
+      </mesh>
+      <mesh position={[0.18, -0.34, 0.02]} rotation={[0.7, 0, 0.35]}>
+        <cylinderGeometry args={[0.008, 0.008, 0.28, 6]} />
+        <meshStandardMaterial color="#1a1e24" roughness={0.55} />
       </mesh>
       </group>
     </group>
@@ -547,14 +565,12 @@ function TaskChair({ x, z, yaw, accentColor }: { x: number; z: number; yaw: numb
   return (
     <group position={[x, 0, z]} rotation={[0, yaw, 0]}>
       <StarBase />
-      <mesh position={[0, 0.46, 0]} castShadow>
-        <boxGeometry args={[0.48, 0.07, 0.46]} />
+      <RoundedBox args={[0.48, 0.07, 0.46]} radius={0.02} smoothness={2} position={[0, 0.46, 0]} castShadow>
         <meshStandardMaterial color="#2c3138" roughness={0.62} />
-      </mesh>
-      <mesh position={[0, 0.78, -0.2]} castShadow>
-        <boxGeometry args={[0.44, 0.48, 0.06]} />
+      </RoundedBox>
+      <RoundedBox args={[0.44, 0.48, 0.06]} radius={0.016} smoothness={2} position={[0, 0.78, -0.2]} castShadow>
         <meshStandardMaterial color="#262c34" roughness={0.58} />
-      </mesh>
+      </RoundedBox>
       <mesh position={[0, 0.98, -0.2]}>
         <boxGeometry args={[0.46, 0.045, 0.07]} />
         <meshStandardMaterial color={accentColor} roughness={0.42} />
@@ -600,10 +616,9 @@ function ExecutiveOffice({ slug, dim }: { slug: 'jv' | 'marj'; dim: boolean }) {
   const deskZ = feet.y - 0.9
   return (
     <group>
-      <mesh position={[feet.x, 0.74, deskZ]} castShadow receiveShadow>
-        <boxGeometry args={[boss ? 1.9 : 1.55, 0.06, 0.82]} />
-        <meshStandardMaterial color="#d7b07a" roughness={0.48} />
-      </mesh>
+      <RoundedBox args={[boss ? 1.9 : 1.55, 0.07, 0.82]} radius={0.016} smoothness={2} position={[feet.x, 0.74, deskZ]} castShadow receiveShadow>
+        <meshStandardMaterial color="#c9a36a" roughness={0.38} metalness={0.08} envMapIntensity={0.45} />
+      </RoundedBox>
       <mesh position={[feet.x, 0.38, deskZ]}>
         <boxGeometry args={[boss ? 1.75 : 1.4, 0.68, 0.74]} />
         <meshStandardMaterial color="#c9955a" roughness={0.58} />
@@ -1201,10 +1216,32 @@ function CeilingCans() {
           </mesh>
           <mesh position={[0, 2.52, 0]} rotation={[-Math.PI / 2, 0, 0]}>
             <circleGeometry args={[0.1, 18]} />
-            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.7} side={DoubleSide} />
+            <meshStandardMaterial color={color} emissive={color} emissiveIntensity={2.1} toneMapped={false} side={DoubleSide} />
           </mesh>
-          <pointLight position={[0, 2.35, 0]} color={color} intensity={16} distance={6.5} decay={2} />
+          <pointLight position={[0, 2.35, 0]} color={color} intensity={6.5} distance={5.4} decay={2} />
         </group>
+      ))}
+    </group>
+  )
+}
+
+function SoffitLights() {
+  const panels: Array<[number, number, number, number]> = [
+    [2.7, 0.22, 4.4, 0.22],
+    [7.15, 0.22, 2.4, 0.2],
+    [10.55, 0.22, 2.5, 0.2],
+    [15.3, 0.22, 1.5, 0.16],
+    [4.15, 4.68, 6.4, 0.14],
+    [4.05, 7.62, 5.6, 0.12],
+    [13.2, 6.72, 4.2, 0.12],
+  ]
+  return (
+    <group>
+      {panels.map(([x, z, w, d]) => (
+        <mesh key={`${x}-${z}`} position={[x, 2.5, z]}>
+          <boxGeometry args={[w, 0.035, d]} />
+          <meshStandardMaterial color="#fff8ee" emissive="#fff1dc" emissiveIntensity={1.7} roughness={0.35} />
+        </mesh>
       ))}
     </group>
   )
