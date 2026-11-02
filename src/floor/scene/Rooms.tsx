@@ -1040,21 +1040,21 @@ function Reception() {
   const top = useArc(0.44, 0.9, 0.35, 2.55, 0.06)
   const logo = useLogo()
   return (
-    <group position={[14.85, 0, 10.85]} rotation={[0, 0.9, 0]}>
+    <group position={[14.85, 0, 10.85]} rotation={[0, 2.4, 0]}>
       <mesh geometry={base} castShadow receiveShadow>
-        <meshStandardMaterial color="#f4f1ea" roughness={0.55} side={DoubleSide} />
+        <meshStandardMaterial color="#a56b3c" roughness={0.58} side={DoubleSide} />
       </mesh>
       <mesh geometry={top} position={[0, 0.86, 0]} castShadow>
-        <meshStandardMaterial color="#14a39a" roughness={0.32} emissive="#0d6e68" emissiveIntensity={0.18} side={DoubleSide} />
+        <meshStandardMaterial color="#14958c" roughness={0.36} side={DoubleSide} />
       </mesh>
-      <mesh position={[0.15, 1.35, -0.15]}>
+      <mesh position={[0.15, 1.15, -0.05]}>
         <boxGeometry args={[0.7, 0.7, 0.04]} />
         <meshStandardMaterial color="#16141a" />
       </mesh>
       {logo ? (
-        <mesh position={[0.15, 1.35, -0.12]}>
+        <mesh position={[0.15, 1.15, -0.02]}>
           <planeGeometry args={[0.48, 0.48]} />
-          <meshStandardMaterial map={logo} />
+          <meshStandardMaterial map={logo} transparent alphaTest={0.15} />
         </mesh>
       ) : null}
     </group>
@@ -1203,7 +1203,7 @@ function CeilingCans() {
             <circleGeometry args={[0.1, 18]} />
             <meshStandardMaterial color={color} emissive={color} emissiveIntensity={1.7} side={DoubleSide} />
           </mesh>
-          <pointLight position={[0, 2.35, 0]} color={color} intensity={46} distance={7.2} decay={2} />
+          <pointLight position={[0, 2.35, 0]} color={color} intensity={16} distance={6.5} decay={2} />
         </group>
       ))}
     </group>

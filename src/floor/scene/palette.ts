@@ -72,6 +72,6 @@ export const SHOTS: Record<string, { position: [number, number, number]; target:
   offices: { position: [7.4, 5.4, 6.6], target: [4.0, 0.75, 2.1] },
   pods: { position: [4.15, 5.6, 12.2], target: [4.1, 0.65, 7.85] },
   lounge: { position: [11.6, 5.6, 15.2], target: [14.4, 0.5, 10.3] },
-  kitchen: { position: [10.7, 4.4, 5.8], target: [10.6, 0.7, 1.9] },
+  kitchen: { position: [12.8, 5.4, 6.8], target: [10.5, 0.55, 2.3] },
   meeting: { position: [16.4, 5.2, 7.6], target: [14.25, 0.7, 4.7] },
 }

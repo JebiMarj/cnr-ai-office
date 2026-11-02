@@ -68,15 +68,15 @@ const OfficeCanvas = forwardRef<OfficeView, Props>(function OfficeCanvas(props, 
         alpha: false,
         preserveDrawingBuffer: true,
         toneMapping: ACESFilmicToneMapping,
-        toneMappingExposure: 1.08,
+        toneMappingExposure: 1,
         outputColorSpace: SRGBColorSpace,
       }}
     >
       <color attach="background" args={['#1a1422']} />
-      <hemisphereLight args={['#fff6ea', '#e6d4be', 0.95]} />
-      <ambientLight intensity={0.58} color="#fff3e6" />
+      <hemisphereLight args={['#fff6ea', '#e6d4be', 0.55]} />
+      <ambientLight intensity={0.34} color="#fff3e6" />
       <KeyLight />
-      <directionalLight position={[-7, 8, -3]} intensity={0.42} color="#d7e3f6" />
+      <directionalLight position={[-7, 8, -3]} intensity={0.28} color="#d7e3f6" />
       <ContactShadows position={[8.2, 0.03, 6.1]} opacity={0.28} scale={22} blur={2.4} far={3.2} resolution={512} color="#3a3028" />
       <OfficeWorld agents={props.agents} />
       <DeskNameplates agents={props.agents} poses={props.poses} />
@@ -112,7 +112,7 @@ function KeyLight() {
     <directionalLight
       ref={light}
       position={[8.4, 16.5, 12.5]}
-      intensity={2.55}
+      intensity={1.45}
       color="#fff3e4"
       castShadow
       shadow-mapSize-width={2048}
