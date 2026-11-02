@@ -78,28 +78,31 @@ function poseLeg(thigh: Group, knee: Group, swing: number, sit: number, bend: nu
   knee.rotation.x = -bend * (1 - sit) - sit * 1.22
 }
 
-function poseArm(arm: Group, elbow: Group, swing: number, sit: number, side: number) {
-  arm.rotation.x = swing * 0.55 * (1 - sit) + 0.12 * (1 - sit) + sit * 0.62
-  arm.rotation.z = side * 0.1
-  elbow.rotation.x = -0.2 * (1 - sit) - sit * 1.05
+function poseArm(arm: Group, elbow: Group, swing: number, sit: number, side: number, typing: number) {
+  arm.rotation.x = swing * 0.55 * (1 - sit) + 0.12 * (1 - sit) + sit * 0.7 + typing * 0.1
+  arm.rotation.z = side * (0.1 + Math.abs(typing) * 0.05)
+  elbow.rotation.x = -0.2 * (1 - sit) - sit * 1.12 - Math.abs(typing) * 0.28
 }
 
-function apply(parts: Parts, sit: number, phase: number, walking: boolean) {
+function apply(parts: Parts, sit: number, phase: number, walking: boolean, typePhase: number) {
   if (!parts.root || !parts.hip || !parts.spine) return
   if (!parts.thighL || !parts.thighR || !parts.kneeL || !parts.kneeR) return
   if (!parts.armL || !parts.armR || !parts.elbowL || !parts.elbowR) return
   const step = walking ? Math.sin(phase) : 0
-  parts.root.position.y = walking ? Math.abs(Math.sin(phase * 2)) * 0.03 : 0
+  const typing = !walking && sit > 0.72 ? Math.sin(typePhase * 8.4) : 0
+  const idle = !walking && sit < 0.25 ? Math.sin(typePhase * 1.3) * 0.035 : 0
+  parts.root.position.y = walking ? Math.abs(Math.sin(phase * 2)) * 0.03 : Math.sin(typePhase * 1.5) * 0.006
   parts.hip.position.y = 1 - sit * 0.46
   parts.hip.position.z = sit * 0.04
   const bendL = walking ? Math.max(0, Math.sin(phase + 0.35)) * 0.75 : 0
   const bendR = walking ? Math.max(0, Math.sin(phase + Math.PI + 0.35)) * 0.75 : 0
   poseLeg(parts.thighL, parts.kneeL, step, sit, bendL)
   poseLeg(parts.thighR, parts.kneeR, -step, sit, bendR)
-  poseArm(parts.armL, parts.elbowL, -step, sit, -1)
-  poseArm(parts.armR, parts.elbowR, step, sit, 1)
-  parts.spine.rotation.y = walking ? -step * 0.1 : 0
-  parts.spine.rotation.x = walking ? 0.06 : sit * 0.05
+  poseArm(parts.armL, parts.elbowL, -step, sit, -1, typing)
+  poseArm(parts.armR, parts.elbowR, step, sit, 1, -typing)
+  parts.spine.rotation.y = walking ? -step * 0.1 : idle
+  parts.spine.rotation.z = idle * 0.6
+  parts.spine.rotation.x = walking ? 0.06 : sit * 0.08 + Math.sin(typePhase * 1.6) * 0.012 * sit
 }
 
 export function PersonMesh({
@@ -132,12 +135,24 @@ export function PersonMesh({
   const gaitRef = useRef(gait)
   const phaseRef = useRef(phase)
   const sitAmt = useRef(gait === 'sit' ? 1 : 0)
+  const typePhase = useRef(0)
+  const reduced = useRef(false)
   gaitRef.current = gait
   phaseRef.current = phase
 
   useLayoutEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const sync = () => {
+      reduced.current = query.matches
+    }
+    sync()
+    query.addEventListener('change', sync)
+    return () => query.removeEventListener('change', sync)
+  }, [])
+
+  useLayoutEffect(() => {
     sitAmt.current = gait === 'sit' ? 1 : gait === 'walk' ? 0 : sitAmt.current
-    apply(parts.current, sitAmt.current, phase, gait === 'walk')
+    apply(parts.current, sitAmt.current, phase, gait === 'walk', typePhase.current)
   }, [gait, phase])
 
   useFrame((_, dt) => {
@@ -145,7 +160,8 @@ export function PersonMesh({
     const target = gaitRef.current === 'sit' ? 1 : 0
     const k = 1 - Math.exp(-dt * (walking ? 12 : 8))
     sitAmt.current += (target - sitAmt.current) * k
-    apply(parts.current, sitAmt.current, phaseRef.current, walking)
+    if (!reduced.current) typePhase.current += dt
+    apply(parts.current, sitAmt.current, phaseRef.current, walking, reduced.current ? 0 : typePhase.current)
   })
 
   const exec = look.outfit === 'suit' || look.outfit === 'vp'
@@ -265,6 +281,11 @@ function Torso({ look, exec }: { look: Look; exec: boolean }) {
           <mesh position={[0.06, 0.24, 0.11]} rotation={[0.15, -0.35, -0.55]} material={cloth(look.top, 0.58)}>
             <boxGeometry args={[0.07, 0.16, 0.018]} />
           </mesh>
+          {look.outfit === 'vp' ? (
+            <mesh position={[0.09, 0.2, 0.128]} material={cloth(look.accent, 0.42)}>
+              <boxGeometry args={[0.034, 0.026, 0.008]} />
+            </mesh>
+          ) : null}
         </group>
       ) : null}
       {look.outfit === 'hoodie' ? (

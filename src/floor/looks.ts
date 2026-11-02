@@ -16,8 +16,8 @@ export type Look = {
 }
 
 export const LOOKS: Record<string, Look> = {
-  jv: { outfit: 'suit', skin: '#e4b48f', hair: '#2a241c', top: '#2a2832', shirt: '#f4efe6', pants: '#1a1822', shoes: '#141218', accent: '#FDBE6A', tie: true },
-  marj: { outfit: 'vp', skin: '#d9a07a', hair: '#1c120e', top: '#6e2448', shirt: '#f7f1ea', pants: '#2a1830', shoes: '#241018', accent: '#FDBE6A' },
+  jv: { outfit: 'suit', skin: '#e4b48f', hair: '#2a241c', top: '#1a1c26', shirt: '#f4efe6', pants: '#12141c', shoes: '#0e0e14', accent: '#FDBE6A', tie: true },
+  marj: { outfit: 'vp', skin: '#d9a07a', hair: '#1c120e', top: '#243044', shirt: '#f7f1ea', pants: '#1a2230', shoes: '#14161c', accent: '#FDBE6A' },
   alex: { outfit: 'blazer', skin: '#c68642', hair: '#1a120e', top: '#2c3348', shirt: '#f4efe6', pants: '#243044', shoes: '#1a1c24', accent: '#F6F1E8', tablet: true },
   mechanicus: { outfit: 'workjacket', skin: '#8d5524', hair: '#16110e', top: '#c46a22', shirt: '#2a211c', pants: '#2c261c', shoes: '#3a2a18', accent: '#1a120e' },
   sage: { outfit: 'cardigan', skin: '#f0d2c0', hair: '#5c534a', top: '#c9a06a', shirt: '#f7f3ec', pants: '#3e382f', shoes: '#2a2420', accent: '#2a241c', glasses: true },

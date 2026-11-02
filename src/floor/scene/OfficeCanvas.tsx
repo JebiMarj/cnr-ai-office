@@ -1,7 +1,9 @@
 import { forwardRef, useImperativeHandle, useLayoutEffect, useRef, type RefObject } from 'react'
-import { ACESFilmicToneMapping, SRGBColorSpace, Vector3, type DirectionalLight, type PerspectiveCamera } from 'three'
+import { ACESFilmicToneMapping, PCFSoftShadowMap, SRGBColorSpace, Vector3, type DirectionalLight, type PerspectiveCamera } from 'three'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { ContactShadows, OrbitControls } from '@react-three/drei'
+import { ContactShadows, Environment, OrbitControls } from '@react-three/drei'
+import { Bloom, EffectComposer, N8AO, ToneMapping } from '@react-three/postprocessing'
+import { ToneMappingMode } from 'postprocessing'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { isWaiting } from '../motion.ts'
 import {
@@ -64,20 +66,24 @@ const OfficeCanvas = forwardRef<OfficeView, Props>(function OfficeCanvas(props, 
       dpr={[1, 1.5]}
       camera={{ position: CAMERA_HOME.position, fov: 33, near: 0.08, far: 90 }}
       gl={{
-        antialias: true,
+        antialias: false,
         alpha: false,
         preserveDrawingBuffer: true,
         toneMapping: ACESFilmicToneMapping,
-        toneMappingExposure: 1,
+        toneMappingExposure: 1.04,
         outputColorSpace: SRGBColorSpace,
       }}
+      onCreated={({ gl }) => {
+        gl.shadowMap.type = PCFSoftShadowMap
+      }}
     >
-      <color attach="background" args={['#1a1422']} />
-      <hemisphereLight args={['#fff6ea', '#e6d4be', 0.55]} />
-      <ambientLight intensity={0.34} color="#fff3e6" />
+      <color attach="background" args={['#161018']} />
+      <hemisphereLight args={['#fff6ea', '#d9c6b0', 0.32]} />
+      <ambientLight intensity={0.18} color="#fff4ea" />
       <KeyLight />
-      <directionalLight position={[-7, 8, -3]} intensity={0.28} color="#d7e3f6" />
-      <ContactShadows position={[8.2, 0.03, 6.1]} opacity={0.28} scale={22} blur={2.4} far={3.2} resolution={512} color="#3a3028" />
+      <directionalLight position={[-7, 8, -3]} intensity={0.22} color="#d7e3f6" />
+      <Environment files="/hdri/studio_small_03_1k.hdr" environmentIntensity={0.32} background={false} />
+      <ContactShadows position={[8.2, 0.03, 6.1]} opacity={0.32} scale={22} blur={2.6} far={3.4} resolution={512} color="#2c241c" />
       <OfficeWorld agents={props.agents} />
       <DeskNameplates agents={props.agents} poses={props.poses} />
       <Crew agents={props.agents} poses={props.poses} onSelect={props.onSelect} />
@@ -94,6 +100,11 @@ const OfficeCanvas = forwardRef<OfficeView, Props>(function OfficeCanvas(props, 
       />
       <Aim />
       <LabelProjector agents={props.agents} poses={props.poses} selected={props.selected} labelRoot={props.labelRoot} />
+      <EffectComposer enableNormalPass multisampling={4}>
+        <N8AO halfRes aoRadius={0.62} intensity={1.05} distanceFalloff={0.55} quality="performance" color="#241c18" />
+        <Bloom mipmapBlur luminanceThreshold={1.08} intensity={0.42} luminanceSmoothing={0.24} />
+        <ToneMapping mode={ToneMappingMode.ACES_FILMIC} />
+      </EffectComposer>
     </Canvas>
   )
 })
@@ -112,7 +123,7 @@ function KeyLight() {
     <directionalLight
       ref={light}
       position={[8.4, 16.5, 12.5]}
-      intensity={1.45}
+      intensity={1.22}
       color="#fff3e4"
       castShadow
       shadow-mapSize-width={2048}

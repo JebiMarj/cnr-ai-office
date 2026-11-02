@@ -69,9 +69,10 @@ export const CAMERA_HOME = frameOffice(1.55)
 
 export const SHOTS: Record<string, { position: [number, number, number]; target: [number, number, number] }> = {
   rotate: { position: [-1.2, 11.2, 2.4], target: [8.3, 0.45, 6.4] },
-  offices: { position: [7.4, 5.4, 6.6], target: [4.0, 0.75, 2.1] },
+  offices: { position: [9.2, 7.6, 8.8], target: [4.7, 0.7, 2.15] },
   pods: { position: [4.15, 5.6, 12.2], target: [4.1, 0.65, 7.85] },
   lounge: { position: [11.6, 5.6, 15.2], target: [14.4, 0.5, 10.3] },
   kitchen: { position: [12.8, 5.4, 6.8], target: [10.5, 0.55, 2.3] },
   meeting: { position: [16.4, 5.2, 7.6], target: [14.25, 0.7, 4.7] },
+  walk: { position: [5.6, 2.35, 7.15], target: [7.6, 1.05, 5.15] },
 }
