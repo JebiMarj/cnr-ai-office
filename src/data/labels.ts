@@ -1,4 +1,15 @@
+import { isExecutive } from './shift.ts'
 import type { Agent } from './types.ts'
+
+/** Floor chip and executive card. The stored name stays "Marj". */
+export function floorTitle(agent: { slug: string; name: string }): string {
+  if (agent.slug === 'marj') return 'Marj · VP'
+  return agent.name
+}
+
+export function byRank<T extends { rank: number; name: string }>(a: T, b: T): number {
+  return a.rank - b.rank || a.name.localeCompare(b.name)
+}
 
 export const STATUS_LABEL: Record<string, string> = {
   working: 'Working',
@@ -14,7 +25,7 @@ export const STATUS_LABEL: Record<string, string> = {
 export function floorCensus(agents: Agent[]): string {
   const counts = new Map<string, number>()
   for (const agent of agents) {
-    if (agent.isBoss) continue
+    if (isExecutive(agent)) continue
     counts.set(agent.status, (counts.get(agent.status) ?? 0) + 1)
   }
 

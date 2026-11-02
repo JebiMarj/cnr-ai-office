@@ -34,6 +34,13 @@ function Glyph({ slug }: { slug: string }) {
           />
         </svg>
       )
+    case 'marj':
+      return (
+        <svg viewBox="0 0 24 24">
+          <path d="M12 4.2 18.5 7.6v4.2c0 3.6-2.6 6.4-6.5 7.6-3.9-1.2-6.5-4-6.5-7.6V7.6L12 4.2z" {...common} />
+          <path d="M12 8.2v6.2M9.4 11.3h5.2" {...common} />
+        </svg>
+      )
     case 'alex':
       return (
         <svg viewBox="0 0 24 24">

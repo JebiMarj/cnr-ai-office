@@ -993,6 +993,98 @@ p {
   padding: 0;
 }
 
+.office-stage {
+  position: relative;
+  height: min(78vh, 860px);
+  min-height: 460px;
+  overflow: hidden;
+  border-radius: 22px;
+  background: #100c14;
+}
+
+.office-canvas {
+  position: absolute !important;
+  inset: 0;
+  width: 100% !important;
+  height: 100% !important;
+  touch-action: none;
+  background: #100c14;
+}
+
+.floor-fallback {
+  margin: 0;
+  padding: 28px 22px;
+  color: var(--muted);
+}
+
+.floor-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px 10px;
+}
+
+.floor-roster {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+button.floor-chip {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: none;
+  align-content: center;
+  gap: 2px 6px;
+  padding: 1px 8px 1px 6px;
+  border: 1px solid rgba(254, 189, 99, 0.55);
+  border-radius: 8px;
+  background: rgba(8, 6, 12, 0.92);
+  color: var(--paper);
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  text-align: left;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+button.floor-chip .tag-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--orange);
+}
+
+button.floor-chip .tag-dot[data-status='waiting_on_jv'] {
+  background: var(--gold);
+}
+
+button.floor-chip .tag-dot[data-status='in_meeting'] {
+  background: var(--pink);
+}
+
+button.floor-chip .label-detail {
+  display: none;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+button.floor-chip:hover .label-detail,
+button.floor-chip.is-open .label-detail {
+  display: block;
+}
+
 .office-scroll {
   overflow: auto;
   max-height: calc(100vh - 148px);
@@ -1002,7 +1094,7 @@ p {
 
 .iso-svg {
   display: block;
-  width: 100%;
+  width: max(100%, 1280px);
   height: auto;
 }
 
@@ -1012,8 +1104,40 @@ p {
 }
 
 .floor-tile {
-  stroke: rgba(254, 189, 99, 0.22);
-  stroke-width: 0.8;
+  stroke: rgba(254, 189, 99, 0.16);
+  stroke-width: 0.7;
+}
+
+.tile-tile {
+  stroke: rgba(246, 241, 232, 0.28);
+  stroke-width: 1;
+}
+
+.tile-rubber {
+  stroke: rgba(247, 149, 33, 0.16);
+}
+
+.rubber-mat {
+  fill: rgba(18, 22, 28, 0.35);
+  stroke: rgba(247, 149, 33, 0.45);
+  stroke-width: 1.4;
+}
+
+.rug-office,
+.rug-vp {
+  fill: rgba(228, 57, 110, 0.08);
+}
+
+.rug-library,
+.rug-conference {
+  fill: rgba(254, 189, 99, 0.05);
+}
+
+.rec-sign {
+  fill: var(--paper);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
 }
 
 .neon-rim {
@@ -1023,8 +1147,16 @@ p {
   filter: drop-shadow(0 0 6px rgba(228, 57, 110, 0.7));
 }
 
+.furn {
+  pointer-events: none;
+}
+
+.floor-labels {
+  pointer-events: none;
+}
+
 .floor-chip .chip-bg {
-  fill: rgba(8, 6, 12, 0.9);
+  fill: rgba(8, 6, 12, 0.94);
   stroke: rgba(254, 189, 99, 0.55);
   stroke-width: 1;
 }
@@ -1203,9 +1335,57 @@ p {
 }
 
 .bob {
-  animation: walker-bob 0.38s ease-in-out infinite;
+  animation: walker-bob 0.42s ease-in-out infinite;
   transform-box: fill-box;
   transform-origin: center bottom;
+}
+
+.limb {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+}
+
+.person[data-gait="walk"] .leg-front,
+.person[data-gait="treadmill"] .leg-front {
+  animation: leg-swing 0.46s ease-in-out infinite;
+}
+
+.person[data-gait="walk"] .leg-back,
+.person[data-gait="treadmill"] .leg-back {
+  animation: leg-swing 0.46s ease-in-out infinite reverse;
+}
+
+.person[data-gait="walk"] .arm-front,
+.person[data-gait="treadmill"] .arm-front {
+  animation: arm-swing 0.46s ease-in-out infinite reverse;
+}
+
+.person[data-gait="walk"] .arm-back,
+.person[data-gait="treadmill"] .arm-back {
+  animation: arm-swing 0.46s ease-in-out infinite;
+}
+
+.person[data-gait="treadmill"] .leg-front,
+.person[data-gait="treadmill"] .leg-back,
+.person[data-gait="treadmill"] .arm-front,
+.person[data-gait="treadmill"] .arm-back {
+  animation-duration: 0.28s;
+}
+
+.person[data-gait="sit"] .arm-front {
+  transform: rotate(22deg);
+}
+
+.person[data-gait="sit"] .arm-back {
+  transform: rotate(-16deg);
+}
+
+.lamp-glow {
+  filter: drop-shadow(0 0 6px rgba(254, 189, 99, 0.45));
+}
+
+.tread-belt {
+  animation: belt-move 0.45s linear infinite;
 }
 
 .pan-hint {
@@ -1239,7 +1419,22 @@ p {
 @keyframes walker-bob {
   0%,
   100% { transform: translateY(0); }
-  50% { transform: translateY(-3.5px); }
+  50% { transform: translateY(-2.5px); }
+}
+
+@keyframes leg-swing {
+  from { transform: rotate(-24deg); }
+  to { transform: rotate(22deg); }
+}
+
+@keyframes arm-swing {
+  from { transform: rotate(26deg); }
+  to { transform: rotate(-24deg); }
+}
+
+@keyframes belt-move {
+  from { stroke-dashoffset: 0; }
+  to { stroke-dashoffset: -14; }
 }
 
 @keyframes sheen-line {

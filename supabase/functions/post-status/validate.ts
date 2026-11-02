@@ -35,6 +35,7 @@ export type Command =
   | { action: 'add_approval'; slug: string; title: string }
   | { action: 'resolve_approval'; approvalId: string; status: ApprovalDecision }
   | { action: 'set_jv_status'; status: JvStatus }
+  | { action: 'set_human_status'; slug: string; status: JvStatus }
 
 export type ParseResult = { ok: true; command: Command } | { ok: false; error: string }
 
@@ -46,6 +47,7 @@ const ACTIONS = [
   'add_approval',
   'resolve_approval',
   'set_jv_status',
+  'set_human_status',
 ] as const
 
 export function parseOfficeCommand(input: unknown): ParseResult {
@@ -135,6 +137,15 @@ export function parseOfficeCommand(input: unknown): ParseResult {
       const status = readEnum(input.status, JV_STATUSES, 'Status')
       if (typeof status !== 'string') return fail(status.error)
       return ok({ action: commandAction, status })
+    }
+    case 'set_human_status': {
+      const extra = exactKeys(input, ['action', 'slug', 'status'])
+      if (extra) return fail(extra)
+      const slug = readSlug(input.slug)
+      if (typeof slug !== 'string') return fail(slug.error)
+      const status = readEnum(input.status, JV_STATUSES, 'Status')
+      if (typeof status !== 'string') return fail(status.error)
+      return ok({ action: commandAction, slug, status })
     }
   }
 }

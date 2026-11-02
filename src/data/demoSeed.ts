@@ -6,13 +6,14 @@ function ago(now: Date, minutes: number): string {
 
 export function buildDemoSnapshot(now: Date): OfficeSnapshot {
   const agents: Agent[] = [
-    agent('jv', 'JV', 'John Vincent Lorenzana', 'Chief Executive Officer', 76, 26, 'away', 'auto', null, true, ago(now, 1)),
-    agent('alex', 'Alex', null, 'Executive & IT Project Assistant', 24, 40, 'waiting_on_jv', 'manual', 'Weekly client handoff is ready for review', false, ago(now, 18)),
-    agent('mechanicus', 'Mechanicus', null, 'GHL Setup Builder', 28, 70, 'working', 'manual', 'Building the GHL onboarding pipeline', false, ago(now, 12)),
-    agent('sage', 'Sage', null, 'IT Project Advisor & Solutions Architect', 46, 36, 'idle', 'manual', 'Architecture notes are filed', false, ago(now, 35)),
-    agent('dev', 'Dev', null, 'Senior Full-Stack Systems Developer', 68, 46, 'working', 'manual', 'Wiring realtime desk updates', false, ago(now, 4)),
-    agent('tech', 'Tech', null, 'IT Support & Systems Technician', 50, 74, 'offline', 'manual', null, false, ago(now, 120)),
-    agent('gia', 'Gia', null, 'Growth & Creative Assistant', 72, 66, 'working', 'manual', 'Color study for the spring campaign', false, ago(now, 6)),
+    agent('jv', 'JV', 'John Vincent Lorenzana', 'Chief Executive Officer', 76, 26, 'away', 'auto', null, true, ago(now, 1), true, 1),
+    agent('marj', 'Marj', null, 'Vice President', 62, 22, 'away', 'auto', null, false, ago(now, 2), true, 2),
+    agent('alex', 'Alex', null, 'Executive & IT Project Assistant', 24, 40, 'waiting_on_jv', 'manual', 'Weekly client handoff is ready for review', false, ago(now, 18), false, 10),
+    agent('mechanicus', 'Mechanicus', null, 'GHL Setup Builder', 28, 70, 'working', 'manual', 'Building the GHL onboarding pipeline', false, ago(now, 12), false, 11),
+    agent('sage', 'Sage', null, 'IT Project Advisor & Solutions Architect', 46, 36, 'idle', 'manual', 'Architecture notes are filed', false, ago(now, 35), false, 12),
+    agent('dev', 'Dev', null, 'Senior Full-Stack Systems Developer', 68, 46, 'working', 'manual', 'Wiring realtime desk updates', false, ago(now, 4), false, 13),
+    agent('tech', 'Tech', null, 'IT Support & Systems Technician', 50, 74, 'offline', 'manual', null, false, ago(now, 120), false, 14),
+    agent('gia', 'Gia', null, 'Growth & Creative Assistant', 72, 66, 'working', 'manual', 'Color study for the spring campaign', false, ago(now, 6), false, 15),
   ]
 
   const bySlug = new Map(agents.map((person) => [person.slug, person]))
@@ -88,6 +89,8 @@ function agent(
   currentTask: string | null,
   isBoss: boolean,
   updatedAt: string,
+  isHuman = false,
+  rank = 100,
 ): Agent {
   return {
     id: `demo-${slug}`,
@@ -101,6 +104,10 @@ function agent(
     statusMode,
     currentTask,
     isBoss,
+    isHuman: isHuman || isBoss,
+    rank,
+    shiftStartHour: 21,
+    shiftEndHour: 5,
     updatedAt,
   }
 }

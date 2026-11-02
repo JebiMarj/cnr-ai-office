@@ -31,6 +31,7 @@ export const brand = {
   },
   agents: {
     jv: '#E4396E',
+    marj: '#C76B8A',
     alex: '#F6F1E8',
     mechanicus: '#F79521',
     sage: '#FEBD63',

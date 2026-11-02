@@ -117,6 +117,7 @@ describe('RLS', () => {
     expect(byTable.get('office_agents')).toEqual([
       'id', 'slug', 'name', 'subtitle', 'role', 'desk_x', 'desk_y',
       'status', 'status_mode', 'current_task', 'is_boss', 'updated_at',
+      'is_human', 'floor_rank', 'shift_start_hour', 'shift_end_hour',
     ])
     expect(byTable.get('office_activities')).toEqual([
       'id', 'agent_id', 'agent_slug', 'agent_name', 'task_title', 'status',
@@ -164,7 +165,7 @@ describe('RLS', () => {
       )
       return result.rows.map((row) => row.slug)
     })
-    expect(slugs).toEqual(['alex', 'dev', 'gia', 'jv', 'mechanicus', 'sage', 'tech'])
+    expect(slugs).toEqual(['alex', 'dev', 'gia', 'jv', 'marj', 'mechanicus', 'sage', 'tech'])
 
     const pending = await asRole('authenticated', async () => {
       const result = await db.query<{ title: string }>(`
@@ -174,6 +175,14 @@ describe('RLS', () => {
       `)
       return result.rows.map((row) => row.title)
     })
+    const marj = await asRole('anon', async () => {
+      const result = await db.query<{ slug: string; is_human: boolean; floor_rank: number; role: string }>(
+        `select slug, is_human, floor_rank, role from public.office_agents where slug = 'marj'`,
+      )
+      return result.rows[0]
+    })
+    expect(marj).toMatchObject({ slug: 'marj', is_human: true, floor_rank: 2, role: 'Vice President' })
+
     expect(pending).toEqual([])
 
     await expectDenied('anon', `

@@ -161,6 +161,7 @@ describe('post-status handler', () => {
     })
     expect(back.status).toBe(200)
     expect(db.agents.get('jv')).toMatchObject({ status: 'online', statusMode: 'auto' })
+    expect(db.agents.get('marj')?.status).toBe('away')
 
     const missing = await call({
       action: 'finish_activity',
@@ -175,6 +176,39 @@ describe('post-status handler', () => {
       status: 'idle',
     }, { db })
     expect(unknown.status).toBe(404)
+  })
+
+  it('sets Marj through set_human_status and leaves set_jv_status on JV', async () => {
+    const db = createMemoryDb()
+    const meeting = await call({ action: 'set_human_status', slug: 'marj', status: 'in_meeting' }, { db })
+    expect(meeting.status).toBe(200)
+    expect(meeting.body.slug).toBe('marj')
+    expect(db.agents.get('marj')).toMatchObject({ status: 'in_meeting', statusMode: 'manual' })
+    expect(db.agents.get('jv')?.statusMode).toBe('auto')
+
+    const staff = await call({ action: 'set_agent_status', slug: 'marj', status: 'idle' }, { db })
+    expect(staff.status).toBe(400)
+    expect(db.agents.get('marj')?.status).toBe('in_meeting')
+
+    const bot = await call({ action: 'set_human_status', slug: 'dev', status: 'online' }, { db })
+    expect(bot.status).toBe(400)
+    expect(db.agents.get('dev')?.status).toBe('working')
+
+    db.agents.get('marj')!.shiftStartHour = 9
+    db.agents.get('marj')!.shiftEndHour = 17
+    const morning = new Date('2026-10-31T02:00:00Z')
+    const auto = await call({ action: 'set_human_status', slug: 'marj', status: 'auto' }, { db, now: morning })
+    expect(auto.status).toBe(200)
+    expect(db.agents.get('marj')).toMatchObject({ status: 'online', statusMode: 'auto' })
+
+    const jv = await call({ action: 'set_jv_status', status: 'auto' }, { db, now: morning })
+    expect(jv.status).toBe(200)
+    expect(db.agents.get('jv')).toMatchObject({ status: 'away', statusMode: 'auto' })
+    expect(db.agents.get('marj')?.status).toBe('online')
+
+    const viaHuman = await call({ action: 'set_human_status', slug: 'jv', status: 'away' }, { db })
+    expect(viaHuman.status).toBe(200)
+    expect(db.agents.get('jv')).toMatchObject({ status: 'away', statusMode: 'manual' })
   })
 
   it('accepts the header when only its SHA-256 hash is stored', async () => {

@@ -16,7 +16,16 @@ export type Agent = {
   status: StaffStatus | BossStatus
   statusMode: StatusMode
   currentTask: string | null
+  /** CEO row. Kept so the original boss shortcut still finds one person. */
   isBoss: boolean
+  /** Human executive. Bots are false. Status follows the executive rules. */
+  isHuman: boolean
+  /** Lower comes first. JV is 1, Marj is 2, then the bots. */
+  rank: number
+  /** Manila hour the auto shift begins. Default 21. */
+  shiftStartHour: number
+  /** Manila hour the auto shift ends, exclusive. Default 5. */
+  shiftEndHour: number
   updatedAt: string
 }
 
