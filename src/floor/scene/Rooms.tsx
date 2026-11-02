@@ -74,11 +74,11 @@ function Floors({ maps }: { maps: OfficeMaps }) {
       </mesh>
       <mesh position={[10.6, 0.022, 2.35]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[3.2, 4.15]} />
-        <meshStandardMaterial color={night.tile} map={kitchen ?? undefined} roughness={0.3} metalness={0.06} />
+        <meshStandardMaterial color="#f7f5f1" map={kitchen ?? undefined} roughness={0.28} metalness={0.04} />
       </mesh>
       <mesh position={[15.35, 0.022, 1.55]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <planeGeometry args={[1.55, 2.55]} />
-        <meshStandardMaterial color={night.tile} map={bath ?? undefined} roughness={0.3} metalness={0.06} />
+        <meshStandardMaterial color="#f7f5f1" map={bath ?? undefined} roughness={0.28} metalness={0.04} />
       </mesh>
     </group>
   )
@@ -525,6 +525,7 @@ function Monitor({
 }) {
   return (
     <group position={[x, y, z]} rotation={[0, yaw, 0]}>
+      <group rotation={[-0.4, 0, 0]}>
       <mesh position={[0, 0, -0.02]} castShadow>
         <boxGeometry args={[0.52, 0.32, 0.025]} />
         <meshStandardMaterial color="#1c2128" metalness={0.4} roughness={0.35} />
@@ -537,6 +538,7 @@ function Monitor({
         <boxGeometry args={[0.07, 0.08, 0.05]} />
         <meshStandardMaterial color="#2c333b" metalness={0.45} roughness={0.4} />
       </mesh>
+      </group>
     </group>
   )
 }
@@ -861,7 +863,7 @@ function MeetingRoom() {
     <group>
       <mesh position={[table.x, 0.74, table.y]} castShadow>
         <cylinderGeometry args={[0.7, 0.7, 0.03, 40]} />
-        <meshStandardMaterial color="#e8f0f6" transparent opacity={0.58} roughness={0.05} metalness={0.08} />
+        <meshStandardMaterial color="#d5e6f2" transparent opacity={0.38} roughness={0.04} metalness={0.12} />
       </mesh>
       <mesh position={[table.x, 0.76, table.y]} rotation={[-Math.PI / 2, 0, 0]}>
         <torusGeometry args={[0.7, 0.012, 8, 40]} />
@@ -1038,12 +1040,12 @@ function Reception() {
   const top = useArc(0.44, 0.9, 0.35, 2.55, 0.06)
   const logo = useLogo()
   return (
-    <group position={[15.2, 0, 11.12]} rotation={[0, 0.55, 0]}>
+    <group position={[14.85, 0, 10.85]} rotation={[0, 0.9, 0]}>
       <mesh geometry={base} castShadow receiveShadow>
-        <meshStandardMaterial color="#f6f3ed" roughness={0.55} />
+        <meshStandardMaterial color="#f4f1ea" roughness={0.55} side={DoubleSide} />
       </mesh>
       <mesh geometry={top} position={[0, 0.86, 0]} castShadow>
-        <meshStandardMaterial color="#1f8a84" roughness={0.38} />
+        <meshStandardMaterial color="#14a39a" roughness={0.32} emissive="#0d6e68" emissiveIntensity={0.18} side={DoubleSide} />
       </mesh>
       <mesh position={[0.15, 1.35, -0.15]}>
         <boxGeometry args={[0.7, 0.7, 0.04]} />
@@ -1255,16 +1257,16 @@ function Nameplate({ name, x, z }: { name: string; x: number; z: number }) {
     texture.colorSpace = SRGBColorSpace
     return texture
   }, [name])
-  const width = Math.min(0.5, 0.16 + name.length * 0.03)
+  const width = Math.min(0.46, 0.2 + name.length * 0.028)
   return (
-    <group position={[x, 0.792, z]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.004, 0]}>
-        <planeGeometry args={[width + 0.03, 0.15]} />
-        <meshStandardMaterial color="#c9955a" roughness={0.45} />
+    <group position={[x, 0.8, z]}>
+      <mesh position={[0, 0.07, 0]} rotation={[-0.7, 0, 0]} castShadow>
+        <planeGeometry args={[width, 0.11]} />
+        <meshStandardMaterial map={map ?? undefined} color="#f7f4ee" roughness={0.45} side={DoubleSide} />
       </mesh>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[width, 0.12]} />
-        <meshStandardMaterial map={map ?? undefined} color="#f7f4ee" roughness={0.48} side={DoubleSide} />
+      <mesh position={[0, 0.02, 0.03]}>
+        <boxGeometry args={[width * 0.72, 0.03, 0.045]} />
+        <meshStandardMaterial color="#6b442c" roughness={0.5} />
       </mesh>
     </group>
   )

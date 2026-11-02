@@ -37,14 +37,14 @@ const eyeWhite = new MeshStandardMaterial({ color: '#f7f5f2', roughness: 0.3 })
 const pupilMat = new MeshStandardMaterial({ color: '#1a120e', roughness: 0.35 })
 const mouthMat = new MeshStandardMaterial({ color: '#a15a52', roughness: 0.5 })
 
-const thighGeo = new CapsuleGeometry(0.058, 0.3, 3, 8)
-const shinGeo = new CapsuleGeometry(0.048, 0.28, 3, 8)
-const armGeo = new CapsuleGeometry(0.044, 0.22, 3, 8)
-const foreGeo = new CapsuleGeometry(0.038, 0.2, 3, 8)
-const torsoGeo = new CapsuleGeometry(0.132, 0.28, 4, 10)
-const headGeo = new SphereGeometry(0.112, 20, 16)
+const thighGeo = new CapsuleGeometry(0.06, 0.3, 4, 12)
+const shinGeo = new CapsuleGeometry(0.05, 0.28, 4, 12)
+const armGeo = new CapsuleGeometry(0.046, 0.22, 4, 12)
+const foreGeo = new CapsuleGeometry(0.04, 0.2, 4, 12)
+const torsoGeo = new CapsuleGeometry(0.132, 0.28, 5, 14)
+const headGeo = new SphereGeometry(0.112, 24, 18)
 const neckGeo = new CylinderGeometry(0.046, 0.054, 0.08, 12)
-const handGeo = new BoxGeometry(0.058, 0.072, 0.03)
+const handGeo = new BoxGeometry(0.07, 0.08, 0.038)
 const shoeGeo = new BoxGeometry(0.1, 0.05, 0.2)
 const soleGeo = new BoxGeometry(0.108, 0.018, 0.21)
 
@@ -131,21 +131,21 @@ export function PersonMesh({
   })
   const gaitRef = useRef(gait)
   const phaseRef = useRef(phase)
+  const sitAmt = useRef(gait === 'sit' ? 1 : 0)
   gaitRef.current = gait
   phaseRef.current = phase
 
   useLayoutEffect(() => {
-    apply(parts.current, gait === 'sit' ? 1 : 0, phase, gait === 'walk')
+    sitAmt.current = gait === 'sit' ? 1 : gait === 'walk' ? 0 : sitAmt.current
+    apply(parts.current, sitAmt.current, phase, gait === 'walk')
   }, [gait, phase])
 
   useFrame((_, dt) => {
     const walking = gaitRef.current === 'walk'
-    const sitTarget = gaitRef.current === 'sit' ? 1 : 0
-    const current = parts.current.hip ? parts.current.hip.position.y : 1
-    const sitNow = (1 - current) / 0.46
-    const k = 1 - Math.exp(-dt * (walking ? 14 : 9))
-    const sit = sitNow + (sitTarget - sitNow) * (gaitRef.current === 'walk' ? 1 : k)
-    apply(parts.current, Math.min(1, Math.max(0, sit)), phaseRef.current, walking)
+    const target = gaitRef.current === 'sit' ? 1 : 0
+    const k = 1 - Math.exp(-dt * (walking ? 12 : 8))
+    sitAmt.current += (target - sitAmt.current) * k
+    apply(parts.current, sitAmt.current, phaseRef.current, walking)
   })
 
   const exec = look.outfit === 'suit' || look.outfit === 'vp'
@@ -158,7 +158,7 @@ export function PersonMesh({
         </mesh>
       ) : null}
       <group ref={(node) => { parts.current.root = node }}>
-        <group ref={(node) => { parts.current.hip = node }} position={[0, 1, 0]}>
+        <group ref={(node) => { parts.current.hip = node }}>
           <Leg side={-1} look={look} thighRef={(node) => { parts.current.thighL = node }} kneeRef={(node) => { parts.current.kneeL = node }} />
           <Leg side={1} look={look} thighRef={(node) => { parts.current.thighR = node }} kneeRef={(node) => { parts.current.kneeR = node }} />
           <group ref={(node) => { parts.current.spine = node }}>
@@ -215,7 +215,10 @@ function Arm({
       <mesh geometry={armGeo} material={cloth(look.top)} position={[0, -0.154, 0]} castShadow />
       <group ref={elbowRef} position={[0, -0.308, 0]}>
         <mesh geometry={foreGeo} material={cloth(look.top)} position={[0, -0.138, 0]} castShadow />
-        <mesh geometry={handGeo} material={skin(look.skin)} position={[side * 0.01, -0.29, 0.02]} castShadow />
+        <mesh geometry={handGeo} material={skin(look.skin)} position={[side * 0.012, -0.3, 0.03]} castShadow />
+        <mesh material={skin(look.skin)} position={[side * 0.04, -0.28, 0.02]}>
+          <sphereGeometry args={[0.016, 8, 8]} />
+        </mesh>
         {hold ? (
           <mesh position={[0, -0.3, 0.06]} rotation={[0.4, 0, side * 0.2]}>
             <boxGeometry args={[0.16, 0.22, 0.012]} />
@@ -248,6 +251,12 @@ function Torso({ look, exec }: { look: Look; exec: boolean }) {
           </mesh>
         </group>
       ) : null}
+      <mesh position={[-0.16, 0.36, 0]} material={cloth(look.top)} castShadow>
+        <sphereGeometry args={[0.055, 12, 10]} />
+      </mesh>
+      <mesh position={[0.16, 0.36, 0]} material={cloth(look.top)} castShadow>
+        <sphereGeometry args={[0.055, 12, 10]} />
+      </mesh>
       {exec ? (
         <group>
           <mesh position={[-0.06, 0.24, 0.11]} rotation={[0.15, 0.35, 0.55]} material={cloth(look.top, 0.58)}>
@@ -279,17 +288,17 @@ function Head({ look }: { look: Look }) {
       <mesh position={[0.11, -0.01, 0]} material={skin(look.skin)}>
         <sphereGeometry args={[0.022, 10, 8]} />
       </mesh>
-      <mesh position={[-0.038, 0.012, 0.098]} material={eyeWhite}>
-        <sphereGeometry args={[0.016, 10, 8]} />
+      <mesh position={[-0.04, 0.015, 0.1]} material={eyeWhite}>
+        <sphereGeometry args={[0.022, 12, 10]} />
       </mesh>
-      <mesh position={[0.038, 0.012, 0.098]} material={eyeWhite}>
-        <sphereGeometry args={[0.016, 10, 8]} />
+      <mesh position={[0.04, 0.015, 0.1]} material={eyeWhite}>
+        <sphereGeometry args={[0.022, 12, 10]} />
       </mesh>
-      <mesh position={[-0.038, 0.01, 0.11]} material={pupilMat}>
-        <sphereGeometry args={[0.008, 8, 8]} />
+      <mesh position={[-0.04, 0.013, 0.118]} material={pupilMat}>
+        <sphereGeometry args={[0.011, 10, 8]} />
       </mesh>
-      <mesh position={[0.038, 0.01, 0.11]} material={pupilMat}>
-        <sphereGeometry args={[0.008, 8, 8]} />
+      <mesh position={[0.04, 0.013, 0.118]} material={pupilMat}>
+        <sphereGeometry args={[0.011, 10, 8]} />
       </mesh>
       <mesh position={[-0.038, 0.04, 0.1]} rotation={[0, 0, 0.25]} material={cloth(look.hair, 0.6)}>
         <boxGeometry args={[0.032, 0.008, 0.01]} />
@@ -367,8 +376,8 @@ function Hair({ look }: { look: Look }) {
     )
   }
   return (
-    <mesh material={mat} position={[0, 0.03, -0.015]} scale={[1.03, 0.62, 1.05]} castShadow>
-      <sphereGeometry args={[0.118, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.58]} />
+    <mesh material={mat} position={[0, 0.025, -0.035]} scale={[1.06, 0.82, 0.98]} castShadow>
+      <sphereGeometry args={[0.12, 18, 14, 0, Math.PI * 2, 0, Math.PI * 0.7]} />
     </mesh>
   )
 }
