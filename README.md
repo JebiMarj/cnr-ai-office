@@ -1,8 +1,16 @@
 # C&R AI Office
 
-A read-only floor for Create & Reach VA Services. The page is an isometric office: JV’s glass corner office, Marj’s VP office, six labelled desks, a lounge, a rest room, a library, a pantry, a gym, a reception desk, and a conference table. People walk between those zones when their status changes. On a normal shift they sit at their own desks and step out for a short break about every ten minutes. An activity feed and the approvals desk sit in a side board. Desk coordinates remain on every agent (`desk_x` / `desk_y`, percent of the floor, x east and y south) for anything that still wants the raw grid.
+The AI Office for Create & Reach Intelligence. The page uses the client template layout: a sidebar (Office, Chat, Needs you, Team, Board, Reports, Usage, Settings & help), a command box, counters (working / waiting on you / done today), an illustrated isometric office where each AI teammate sits at a desk, and an approval card. It reads the same public, read-only views as before (`office_agents`, `office_activities`, `office_approvals`). Bots keep posting through the `post-status` edge function, which this redesign does not change.
 
-The page has no login. Anyone with the link can read it. Bots write through one edge function. The anon key cannot insert, update, or delete. People who are on the floor sit at their own desk. About every ten minutes, each of them takes a short walk to the kitchenette, the lounge, or another desk, then sits back down.
+Status mapping: `working` → at their desk with a task bubble · `waiting_on_jv` → hand up, listed in Needs you · `idle` → done / standing by · `offline` → empty chair.
+
+## Per-client template
+
+Workspace name, office sign, time zone, logo, brand colors, owner card and teammate list come from `public/tenants/<id>.json`. The default tenant is `cnr`. Set `VITE_TENANT=<id>` at build time for another client, or open `?tenant=sample-client` to see the generic sample. `dataSource: "demo"` shows sample work with no backend.
+
+The command box, Pause, and Approve / Hold / Send back / Instruct are preview stubs: they show a notice and send nothing.
+
+The previous 3D floor is on the `backup/pre-cnri-redesign` branch.
 
 ## Preview without Supabase
 
@@ -11,7 +19,7 @@ npm ci
 npm run dev
 ```
 
-Open [http://localhost:5173/?mock=1](http://localhost:5173/?mock=1). Demo mode also turns on by itself when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are missing. A desk changes on its own every few seconds so the status animation is visible.
+Open [http://localhost:5173/?mock=1](http://localhost:5173/?mock=1). Demo data also shows when `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are missing.
 
 ## Production build
 

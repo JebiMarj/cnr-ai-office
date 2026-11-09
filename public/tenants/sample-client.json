@@ -1,0 +1,62 @@
+{
+  "platform": {
+    "name": "Create & Reach Intelligence",
+    "shortName": "C&R Intelligence",
+    "poweredBy": "Powered by Create & Reach Intelligence"
+  },
+  "workspace": {
+    "name": "Sample Client AI Office",
+    "officeSign": "Sample Client",
+    "timezone": "America/New_York",
+    "timezoneLabel": "New York"
+  },
+  "brand": {
+    "logo": "/cnr-logo-128.png",
+    "primary": "#0E7490",
+    "accent": "#F59E0B",
+    "gold": "#FCD34D",
+    "sidebar": "#0F172A",
+    "floor": "#E7EEF3",
+    "wall": "#F8FAFC"
+  },
+  "owner": {
+    "name": "Client Owner",
+    "title": "Owner",
+    "initials": "CO"
+  },
+  "teammates": [
+    {
+      "slug": "ava",
+      "name": "Ava",
+      "role": "Inbox Manager",
+      "color": "#0E7490",
+      "skin": "#C68863",
+      "hair": "#2B1D16"
+    },
+    {
+      "slug": "leo",
+      "name": "Leo",
+      "role": "CRM & Pipeline Builder",
+      "color": "#F59E0B",
+      "skin": "#8D5A3B",
+      "hair": "#1B1B1B"
+    },
+    {
+      "slug": "mia",
+      "name": "Mia",
+      "role": "Social Media Manager",
+      "color": "#DB2777",
+      "skin": "#E0B48F",
+      "hair": "#6B4B2E"
+    },
+    {
+      "slug": "noah",
+      "name": "Noah",
+      "role": "Bookkeeping Assistant",
+      "color": "#16A34A",
+      "skin": "#B57A55",
+      "hair": "#111111"
+    }
+  ],
+  "dataSource": "demo"
+}

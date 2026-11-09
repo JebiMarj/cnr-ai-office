@@ -1,0 +1,78 @@
+{
+  "platform": {
+    "name": "Create & Reach Intelligence",
+    "shortName": "C&R Intelligence",
+    "poweredBy": "Powered by Create & Reach Intelligence"
+  },
+  "workspace": {
+    "name": "C&R AI Office",
+    "officeSign": "Create & Reach",
+    "timezone": "Asia/Manila",
+    "timezoneLabel": "Manila"
+  },
+  "brand": {
+    "logo": "/cnr-logo-128.png",
+    "primary": "#E4396E",
+    "accent": "#F79521",
+    "gold": "#FEBD63",
+    "sidebar": "#1C1A22",
+    "floor": "#F3E6D3",
+    "wall": "#FBF7F1"
+  },
+  "owner": {
+    "name": "JV",
+    "title": "Owner",
+    "initials": "JV"
+  },
+  "teammates": [
+    {
+      "slug": "alex",
+      "name": "Alex",
+      "role": "Executive & IT Project Assistant",
+      "color": "#E4396E",
+      "skin": "#C68863",
+      "hair": "#2B1D16"
+    },
+    {
+      "slug": "mechanicus",
+      "name": "Mechanicus",
+      "role": "GHL Setup Builder",
+      "color": "#F79521",
+      "skin": "#8D5A3B",
+      "hair": "#1B1B1B"
+    },
+    {
+      "slug": "sage",
+      "name": "Sage",
+      "role": "IT Project Advisor & Solutions Architect",
+      "color": "#3BA272",
+      "skin": "#E0B48F",
+      "hair": "#6B4B2E"
+    },
+    {
+      "slug": "dev",
+      "name": "Dev",
+      "role": "Senior Full-Stack Systems Developer",
+      "color": "#3B82F6",
+      "skin": "#B57A55",
+      "hair": "#111111"
+    },
+    {
+      "slug": "tech",
+      "name": "Tech",
+      "role": "IT Support & Systems Technician",
+      "color": "#8B5CF6",
+      "skin": "#D9A27C",
+      "hair": "#3A2A20"
+    },
+    {
+      "slug": "gia",
+      "name": "Gia",
+      "role": "Growth & Creative Assistant",
+      "color": "#EC9F05",
+      "skin": "#C98E6B",
+      "hair": "#4A2C1A"
+    }
+  ],
+  "dataSource": "live"
+}
