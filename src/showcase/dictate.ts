@@ -13,6 +13,8 @@ export type SpeechSession = {
   onresult: ((event: SpeechResultEvent) => void) | null
   onerror: ((event: SpeechErrorEvent) => void) | null
   onend: (() => void) | null
+  onstart?: (() => void) | null
+  abort?: () => void
 }
 
 export type SpeechCtor = new () => SpeechSession

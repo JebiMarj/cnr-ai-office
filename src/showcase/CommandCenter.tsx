@@ -26,7 +26,7 @@ export function stageShowcaseGoal(workspace: string, goal: string) {
   window.dispatchEvent(new CustomEvent(GOAL_EVENT))
 }
 
-export function CommandCenter({ tenant, snap, now, onOpenFloor }: { tenant: Tenant; snap: Snapshot; now: Date; onOpenFloor: () => void }) {
+export function CommandCenter({ tenant, snap, now, onOpenFloor, onOpenVoice }: { tenant: Tenant; snap: Snapshot; now: Date; onOpenFloor: () => void; onOpenVoice?: () => void }) {
   const jarvis = isJarvisWorkspace(tenant.teammates)
   const workspace = tenant.workspace.name
   const [session, setSession] = useState<DemoSession | null>(() => loadSession(sessionStore(sessionKey(workspace))))
@@ -153,6 +153,7 @@ export function CommandCenter({ tenant, snap, now, onOpenFloor }: { tenant: Tena
               : `${tenant.workspace.name}. A local sample of how a goal moves across this floor.`}
           </p>
           <p className="cc-owner">{tenant.owner.name} · {tenant.owner.title}</p>
+          {onOpenVoice && <button type="button" className="cc-text" onClick={onOpenVoice}>Open voice-interface prototype</button>}
         </div>
       </header>
 

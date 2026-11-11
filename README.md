@@ -16,6 +16,8 @@ The office command box starts a **local showcase sample** and opens the Jarvis c
 
 Displayed names on the C&R floor are Jarvis, Ultron, Friday, EDITH, Jocasta, and DUM-E. Status still keys off the slugs `alex`, `dev`, `sage`, `tech`, `gia`, and `mechanicus`. Responsibilities are unchanged. JV stays the human owner.
 
+`#/voice` is a separate voice-interface prototype. It is not connected to a bot, the office team, or a model. A microphone session starts only from Start voice session. “Hello Jarvis” and “Hello Jarvis, are you up?” are handled in that tab, and the reply “At your service, sir” is a local script. A later line can file the existing sample task, still marked as a sample. Typed self-test works when the browser has no speech recognition. Browser speech recognition may send audio to the browser vendor; the page says so before the microphone starts. No audio is stored by this app.
+
 The office feed (live, demo, connecting, offline, or stale) is separate from the sample. Gmail, calendar, and GoHighLevel show as not connected. The master project tracker shows as not verified, with no project rows. Voice input appears only when the browser exposes speech recognition, and only after a click.
 
 The previous 3D floor is on the `backup/pre-cnri-redesign` branch.

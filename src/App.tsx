@@ -9,8 +9,9 @@ import { CoreMark } from './showcase/CoreMark.tsx'
 import { SHOWCASE_BANNER } from './showcase/copy.ts'
 import { isJarvisWorkspace } from './showcase/roster.ts'
 import { describeOfficeFeed } from './showcase/feed.ts'
+import { VoicePrototype } from './showcase/voice/VoicePrototype.tsx'
 
-type Page = 'office' | 'jarvis' | 'chat' | 'needs' | 'team' | 'board' | 'reports' | 'usage' | 'settings'
+type Page = 'office' | 'jarvis' | 'voice' | 'chat' | 'needs' | 'team' | 'board' | 'reports' | 'usage' | 'settings'
 const STATUS_LABEL: Record<string, string> = { working: 'Working', waiting_on_jv: 'Hand up · waiting on you', idle: 'Done · standing by', offline: 'Offline' }
 
 type NeedItem = { key: string; slug: string; title: string; since: string; kind: 'approval' | 'waiting' }
@@ -84,6 +85,7 @@ export function App({ tenant }: { tenant: Tenant }) {
   const nav: { id: Page; label: string; icon: string; aria?: string }[] = [
     { id: 'office', label: 'Office', icon: 'office' },
     { id: 'jarvis', label: jarvis ? 'Jarvis' : 'Command', icon: 'core', aria: jarvis ? 'Jarvis command center' : 'Command center' },
+    { id: 'voice', label: 'Voice', icon: 'core', aria: 'Voice-interface prototype' },
     { id: 'chat', label: 'Chat', icon: 'chat' },
     { id: 'needs', label: 'Needs you', icon: 'inbox' },
     { id: 'team', label: 'Team', icon: 'team' },
@@ -105,7 +107,7 @@ export function App({ tenant }: { tenant: Tenant }) {
         </div>
         <nav>
           {nav.map((n) => (
-            <button key={n.id} className={`nav-item${n.id === 'jarvis' ? ' nav-jarvis' : ''}${page === n.id ? ' active' : ''}`} aria-label={n.aria} onClick={() => go(n.id)}>
+            <button key={n.id} className={`nav-item${n.id === 'jarvis' || n.id === 'voice' ? ' nav-jarvis' : ''}${page === n.id ? ' active' : ''}`} aria-label={n.aria} onClick={() => go(n.id)}>
               <Icon name={n.icon} />
               <span>{n.label}</span>
               {n.id === 'needs' && needs.length > 0 && <span className="badge">{needs.length}</span>}
@@ -124,7 +126,7 @@ export function App({ tenant }: { tenant: Tenant }) {
         </div>
       </aside>
 
-      <main className={page === 'jarvis' ? 'main jarvis-main' : 'main'}>
+      <main className={page === 'jarvis' || page === 'voice' ? 'main jarvis-main' : 'main'}>
         <header className="topbar">
           <div className="ws">
             <div className="ws-name">{tenant.workspace.name}</div>
@@ -156,7 +158,7 @@ export function App({ tenant }: { tenant: Tenant }) {
         </header>
 
         <section className="content">
-          {snap.connection === 'demo' && page !== 'jarvis' && (
+          {snap.connection === 'demo' && page !== 'jarvis' && page !== 'voice' && (
             <div className="sample-banner" role="note">
               <strong>{SHOWCASE_BANNER}</strong>
               <span>Template sample data is on screen. It is not the live office feed.</span>
@@ -207,7 +209,8 @@ export function App({ tenant }: { tenant: Tenant }) {
               <Activity snap={snap} bySlug={bySlug} now={now} />
             </>
           )}
-          {page === 'jarvis' && <CommandCenter tenant={tenant} snap={snap} now={now} onOpenFloor={() => go('office')} />}
+          {page === 'jarvis' && <CommandCenter tenant={tenant} snap={snap} now={now} onOpenFloor={() => go('office')} onOpenVoice={() => go('voice')} />}
+          {page === 'voice' && <VoicePrototype tenant={tenant} onOpenCommand={() => go('jarvis')} onOpenFloor={() => go('office')} />}
           {page === 'needs' && (
             <Panel title="Needs you" sub="Items where a teammate has their hand up. Read-only in this preview.">
               {needs.length === 0 && <Empty text="Nothing is waiting on you right now." />}
