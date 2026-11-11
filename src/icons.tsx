@@ -15,6 +15,7 @@ const paths: Record<string, string> = {
   back: 'M9 14 4 9l5-5M4 9h11a5 5 0 0 1 0 10h-3',
   instruct: 'M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z',
   attach: 'M21 11l-8.5 8.5a5 5 0 0 1-7-7L14 4a3.5 3.5 0 0 1 5 5l-8.5 8.5a2 2 0 0 1-3-3L15 7',
+  core: 'M12 3v3M12 18v3M3 12h3M18 12h3M12 12m-6.5 0a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0 -13 0M12 12m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0',
 }
 export function Icon({ name, size = 18 }: { name: string; size?: number }) {
   return (

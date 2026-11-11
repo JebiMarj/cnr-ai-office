@@ -8,7 +8,15 @@ Status mapping: `working` → at their desk with a task bubble · `waiting_on_jv
 
 Workspace name, office sign, time zone, logo, brand colors, owner card and teammate list come from `public/tenants/<id>.json`. The default tenant is `cnr`. Set `VITE_TENANT=<id>` at build time for another client, or open `?tenant=sample-client` to see the generic sample. `dataSource: "demo"` shows sample work with no backend.
 
-The command box, Pause, and Approve / Hold / Send back / Instruct are preview stubs: they show a notice and send nothing.
+The office command box starts a **local showcase sample** and opens the Jarvis command center. The goal stays in the browser tab. Pause, and Approve / Hold / Send back / Instruct on the office floor, stay preview stubs: they show a notice and send nothing.
+
+## Jarvis showcase
+
+`#/jarvis` is the command center. It keeps the Create & Reach sidebar and the office floor. A sample runs only in `sessionStorage`: goal, local specialist assignment, stepped progress, a decision, a recorded outcome, and reset. The banner reads “Showcase demo — sample tasks; no external actions.”
+
+Displayed names on the C&R floor are Jarvis, Ultron, Friday, EDITH, Jocasta, and DUM-E. Status still keys off the slugs `alex`, `dev`, `sage`, `tech`, `gia`, and `mechanicus`. Responsibilities are unchanged. JV stays the human owner.
+
+The office feed (live, demo, connecting, offline, or stale) is separate from the sample. Gmail, calendar, and GoHighLevel show as not connected. The master project tracker shows as not verified, with no project rows. Voice input appears only when the browser exposes speech recognition, and only after a click.
 
 The previous 3D floor is on the `backup/pre-cnri-redesign` branch.
 

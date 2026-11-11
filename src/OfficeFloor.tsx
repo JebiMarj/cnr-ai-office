@@ -94,7 +94,7 @@ function Sofa({ x, y, color }: { x: number; y: number; color: string }) {
 }
 
 /* ---------- people ---------- */
-type DeskProps = { layer: 'base' | 'labels'; mate: Teammate; state: AgentState | undefined; gx: number; gy: number; selected: boolean; onSelect: (slug: string) => void; primary: string; accent: string }
+type DeskProps = { layer: 'base' | 'labels' | 'names'; mate: Teammate; state: AgentState | undefined; gx: number; gy: number; selected: boolean; onSelect: (slug: string) => void; primary: string; accent: string }
 
 function Desk({ layer, mate, state, gx, gy, onSelect, selected, accent }: DeskProps) {
   const status = state?.status ?? 'offline'
@@ -105,23 +105,28 @@ function Desk({ layer, mate, state, gx, gy, onSelect, selected, accent }: DeskPr
   const [hx, hy] = P(cx + 0.32, cy + 0.32, 1.42)
   const [bx, by] = P(cx + 0.32, cy + 0.32, 0.5)
   const present = status !== 'offline'
-  const [tx, ty] = P(gx + w / 2, gy + d + 1.55, 0)
+  const [tx, ty] = P(gx + w / 2, gy + d + 1.05, 0)
   const tagW = mate.name.length * 8 + 32
   const bubbleText = state?.currentTask && (status === 'working' || status === 'waiting_on_jv') ? wrap(state.currentTask) : null
   const bw = bubbleText ? Math.max(...bubbleText.map((l) => l.length)) * 6.9 + 26 : 0
   const bh = bubbleText ? bubbleText.length * 16 + 12 : 0
   const bubbleY = hy - 40 - bh
   const cls = `desk desk-${status}${selected ? ' desk-selected' : ''}`
+  if (layer === 'names') {
+    return (
+      <g className={cls} onClick={() => onSelect(mate.slug)} style={{ cursor: 'pointer' }}>
+        <title>{`${mate.name} · ${mate.role}`}</title>
+        <g transform={`translate(${tx - tagW / 2} ${ty - 2})`}>
+          <rect width={tagW} height={24} rx={12} fill="#fff" stroke={status === 'waiting_on_jv' ? accent : 'rgba(20,20,30,0.12)'} strokeWidth={status === 'waiting_on_jv' ? 1.6 : 1} filter="url(#tagShadow)" />
+          <circle cx={14} cy={12} r={5} fill={present ? mate.color : '#B8BCC6'} />
+          <text x={25} y={16.5} className="tag-text">{mate.name}</text>
+        </g>
+      </g>
+    )
+  }
   if (layer === 'labels') {
     return (
       <g className={cls} onClick={() => onSelect(mate.slug)} style={{ cursor: 'pointer' }}>
-      {/* name tag */}
-      <g transform={`translate(${tx - tagW / 2} ${ty - 2})`}>
-        <rect width={tagW} height={24} rx={12} fill="#fff" stroke={status === 'waiting_on_jv' ? accent : 'rgba(20,20,30,0.12)'} strokeWidth={status === 'waiting_on_jv' ? 1.6 : 1} filter="url(#tagShadow)" />
-        <circle cx={14} cy={12} r={5} fill={present ? mate.color : '#B8BCC6'} />
-        <text x={25} y={16.5} className="tag-text">{mate.name}</text>
-      </g>
-      {/* status markers */}
       {status === 'waiting_on_jv' && (
         <g className="alert" transform={`translate(${hx + 26} ${hy - 26})`}>
           <circle r={11} fill={accent} stroke="#fff" strokeWidth={2} />
@@ -291,6 +296,9 @@ export function OfficeFloor({ tenant, agents, now, selected, onSelect }: { tenan
       <Plant x={14.9} y={1.5} s={0.9} />
       {ordered.map(({ m, gx, gy }) => (
         <Desk key={`l-${m.slug}`} layer="labels" mate={m} state={agents[m.slug]} gx={gx} gy={gy} onSelect={onSelect} selected={selected === m.slug} primary={brand.primary} accent={brand.accent} />
+      ))}
+      {ordered.map(({ m, gx, gy }) => (
+        <Desk key={`n-${m.slug}`} layer="names" mate={m} state={agents[m.slug]} gx={gx} gy={gy} onSelect={onSelect} selected={selected === m.slug} primary={brand.primary} accent={brand.accent} />
       ))}
     </svg>
   )

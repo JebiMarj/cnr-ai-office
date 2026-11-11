@@ -4,18 +4,13 @@ import { emptySnapshot, startDemo, startLive } from './data.ts'
 import { OfficeFloor } from './OfficeFloor.tsx'
 import { Icon } from './icons.tsx'
 import { ago, greeting, longDate } from './time.ts'
+import { CommandCenter, stageShowcaseGoal } from './showcase/CommandCenter.tsx'
+import { CoreMark } from './showcase/CoreMark.tsx'
+import { SHOWCASE_BANNER } from './showcase/copy.ts'
+import { isJarvisWorkspace } from './showcase/roster.ts'
+import { describeOfficeFeed } from './showcase/feed.ts'
 
-type Page = 'office' | 'chat' | 'needs' | 'team' | 'board' | 'reports' | 'usage' | 'settings'
-const NAV: { id: Page; label: string; icon: string }[] = [
-  { id: 'office', label: 'Office', icon: 'office' },
-  { id: 'chat', label: 'Chat', icon: 'chat' },
-  { id: 'needs', label: 'Needs you', icon: 'inbox' },
-  { id: 'team', label: 'Team', icon: 'team' },
-  { id: 'board', label: 'Board', icon: 'board' },
-  { id: 'reports', label: 'Reports', icon: 'reports' },
-  { id: 'usage', label: 'Usage', icon: 'usage' },
-  { id: 'settings', label: 'Settings & help', icon: 'settings' },
-]
+type Page = 'office' | 'jarvis' | 'chat' | 'needs' | 'team' | 'board' | 'reports' | 'usage' | 'settings'
 const STATUS_LABEL: Record<string, string> = { working: 'Working', waiting_on_jv: 'Hand up · waiting on you', idle: 'Done · standing by', offline: 'Offline' }
 
 type NeedItem = { key: string; slug: string; title: string; since: string; kind: 'approval' | 'waiting' }
@@ -57,6 +52,19 @@ export function App({ tenant }: { tenant: Tenant }) {
     const t = setTimeout(() => setToast(null), 3200)
     return () => clearTimeout(t)
   }, [toast])
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent) => {
+      if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== 'k') return
+      const target = event.target as HTMLElement | null
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return
+      event.preventDefault()
+      const goal = document.getElementById('showcase-goal')
+      const command = document.getElementById('office-command')
+      ;(goal ?? command)?.focus()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   const tz = tenant.workspace.timezone
   const bySlug = useMemo(() => Object.fromEntries(tenant.teammates.map((t) => [t.slug, t])), [tenant]) as Record<string, Teammate>
@@ -71,6 +79,19 @@ export function App({ tenant }: { tenant: Tenant }) {
   }, [snap])
   const working = Object.values(snap.agents).filter((a) => a.status === 'working').length
   const readOnly = (what: string) => setToast(`Preview only: ${what} isn't wired up yet. Nothing was sent.`)
+  const jarvis = isJarvisWorkspace(tenant.teammates)
+  const feed = describeOfficeFeed(snap, now)
+  const nav: { id: Page; label: string; icon: string; aria?: string }[] = [
+    { id: 'office', label: 'Office', icon: 'office' },
+    { id: 'jarvis', label: jarvis ? 'Jarvis' : 'Command', icon: 'core', aria: jarvis ? 'Jarvis command center' : 'Command center' },
+    { id: 'chat', label: 'Chat', icon: 'chat' },
+    { id: 'needs', label: 'Needs you', icon: 'inbox' },
+    { id: 'team', label: 'Team', icon: 'team' },
+    { id: 'board', label: 'Board', icon: 'board' },
+    { id: 'reports', label: 'Reports', icon: 'reports' },
+    { id: 'usage', label: 'Usage', icon: 'usage' },
+    { id: 'settings', label: 'Settings & help', icon: 'settings' },
+  ]
 
   return (
     <div className="shell">
@@ -83,8 +104,8 @@ export function App({ tenant }: { tenant: Tenant }) {
           </div>
         </div>
         <nav>
-          {NAV.map((n) => (
-            <button key={n.id} className={`nav-item${page === n.id ? ' active' : ''}`} onClick={() => go(n.id)}>
+          {nav.map((n) => (
+            <button key={n.id} className={`nav-item${n.id === 'jarvis' ? ' nav-jarvis' : ''}${page === n.id ? ' active' : ''}`} aria-label={n.aria} onClick={() => go(n.id)}>
               <Icon name={n.icon} />
               <span>{n.label}</span>
               {n.id === 'needs' && needs.length > 0 && <span className="badge">{needs.length}</span>}
@@ -96,25 +117,34 @@ export function App({ tenant }: { tenant: Tenant }) {
             <div className="avatar">{tenant.owner.initials}</div>
             <div>
               <div className="user-name">{tenant.owner.name}</div>
-              <div className="user-sub">{tenant.owner.title} · {snap.connection === 'live' ? 'Live' : snap.connection === 'demo' ? 'Demo data' : snap.connection === 'offline' ? 'Reconnecting' : 'Connecting'}</div>
+              <div className="user-sub">{tenant.owner.title} · {feed.label}</div>
             </div>
           </div>
           <div className="powered">{tenant.platform.poweredBy}</div>
         </div>
       </aside>
 
-      <main className="main">
+      <main className={page === 'jarvis' ? 'main jarvis-main' : 'main'}>
         <header className="topbar">
           <div className="ws">
             <div className="ws-name">{tenant.workspace.name}</div>
             <div className="ws-date">{longDate(now, tz)} {tenant.workspace.timezoneLabel}</div>
           </div>
-          <form className="command" onSubmit={(e) => { e.preventDefault(); readOnly('sending tasks from this box'); setCmd('') }}>
+          <form className="command" aria-describedby="command-hint" onSubmit={(e) => {
+            e.preventDefault()
+            const goal = cmd.trim()
+            if (!goal) return
+            stageShowcaseGoal(tenant.workspace.name, goal)
+            setCmd('')
+            go('jarvis')
+            setToast(`${SHOWCASE_BANNER} Opened in this tab. Nothing was sent.`)
+          }}>
             <Icon name="send" size={16} />
-            <input value={cmd} onChange={(e) => setCmd(e.target.value)} placeholder="Tell your team what to do..." aria-label="Tell your team what to do" />
+            <input id="office-command" value={cmd} onChange={(e) => setCmd(e.target.value)} placeholder="Start a local showcase sample..." aria-label="Goal for a local showcase sample" />
             <kbd>Ctrl K</kbd>
             <button type="button" className="ghost-icon" onClick={() => readOnly('attachments')} aria-label="Attach"><Icon name="attach" size={16} /></button>
-            <button type="submit" className="send">Send</button>
+            <button type="submit" className="send">Sample</button>
+            <p id="command-hint" className="sr-only">{SHOWCASE_BANNER} The goal stays in this browser tab.</p>
           </form>
           <div className="teamtoggle">
             <span className={`dot ${paused ? 'paused' : ''}`} />
@@ -126,16 +156,29 @@ export function App({ tenant }: { tenant: Tenant }) {
         </header>
 
         <section className="content">
+          {snap.connection === 'demo' && page !== 'jarvis' && (
+            <div className="sample-banner" role="note">
+              <strong>{SHOWCASE_BANNER}</strong>
+              <span>Template sample data is on screen. It is not the live office feed.</span>
+            </div>
+          )}
           {page === 'office' && (
             <>
               <div className="hero">
-                <h1>{greeting(now, tz)}, {tenant.owner.name}</h1>
+                <div>
+                  <h1>{greeting(now, tz)}, {tenant.owner.name}</h1>
+                  <button className="jarvis-entry" onClick={() => go('jarvis')}>
+                    <CoreMark slug={jarvis ? 'alex' : (tenant.teammates[0]?.slug ?? 'alex')} color={tenant.teammates.find((t) => t.slug === 'alex')?.color ?? tenant.teammates[0]?.color ?? '#5CE1FF'} size={28} />
+                    {jarvis ? 'Open Jarvis command center' : 'Open command center'}
+                  </button>
+                </div>
                 <div className="counters">
                   <div className="counter"><span className="c-dot green" /><b>{working}</b> teammate{working === 1 ? '' : 's'} working</div>
                   <button className={`counter ${needs.length ? 'warn' : ''}`} onClick={() => go('needs')}><span className="c-ico">✋</span><b>{needs.length}</b> waiting on you</button>
                   <div className="counter"><span className="c-ico check">✓</span><b>{snap.doneToday}</b> done today</div>
                 </div>
               </div>
+              <p className="office-source" data-testid="floor-feed"><b>Office status · {feed.label}</b> · {feed.freshness}. {feed.detail}</p>
               <div className="floor-wrap">
                 {snap.connection === 'connecting' ? <div className="loading">Opening the office…</div> : (
                   <OfficeFloor tenant={tenant} agents={snap.agents} now={now} selected={selected} onSelect={(s) => setSelected(s === selected ? null : s)} />
@@ -164,6 +207,7 @@ export function App({ tenant }: { tenant: Tenant }) {
               <Activity snap={snap} bySlug={bySlug} now={now} />
             </>
           )}
+          {page === 'jarvis' && <CommandCenter tenant={tenant} snap={snap} now={now} onOpenFloor={() => go('office')} />}
           {page === 'needs' && (
             <Panel title="Needs you" sub="Items where a teammate has their hand up. Read-only in this preview.">
               {needs.length === 0 && <Empty text="Nothing is waiting on you right now." />}
@@ -177,7 +221,7 @@ export function App({ tenant }: { tenant: Tenant }) {
                   const a = snap.agents[t.slug]
                   return (
                     <div key={t.slug} className="team-card">
-                      <div className="tc-avatar" style={{ background: t.color }}>{t.name[0]}</div>
+                      <CoreMark slug={t.slug} color={t.color} size={42} title={t.name} />
                       <div className="tc-name">{t.name}</div>
                       <div className="tc-role">{t.role}</div>
                       <div className={`pill s-${a?.status ?? 'offline'}`}>{STATUS_LABEL[a?.status ?? 'offline']}</div>
@@ -223,7 +267,7 @@ function ApprovalCard({ item, mate, now, onAct, more = 0, onMore, inline, onClos
   return (
     <div className={`approval ${inline ? 'inline' : ''}`}>
       <div className="ap-head">
-        <div className="ap-avatar" style={{ background: mate.color }}>{mate.name[0]}</div>
+        <CoreMark slug={mate.slug} color={mate.color} size={34} title={mate.name} />
         <div className="ap-who"><b>{mate.name}</b><small>{mate.role} · {ago(item.since, now)}</small></div>
         <span className="ap-tag">{item.kind === 'approval' ? 'Approval' : 'Hand up'}</span>
         {onClose && <button className="ap-close" onClick={onClose} aria-label="Minimize">×</button>}
