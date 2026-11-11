@@ -27,49 +27,49 @@
   "teammates": [
     {
       "slug": "alex",
-      "name": "Alex",
+      "name": "Jarvis",
       "role": "Executive & IT Project Assistant",
-      "color": "#E4396E",
+      "color": "#0E8FA3",
       "skin": "#C68863",
       "hair": "#2B1D16"
     },
     {
       "slug": "mechanicus",
-      "name": "Mechanicus",
+      "name": "DUM-E",
       "role": "GHL Setup Builder",
-      "color": "#F79521",
+      "color": "#C9842A",
       "skin": "#8D5A3B",
       "hair": "#1B1B1B"
     },
     {
       "slug": "sage",
-      "name": "Sage",
+      "name": "Friday",
       "role": "IT Project Advisor & Solutions Architect",
-      "color": "#3BA272",
+      "color": "#6D4AD4",
       "skin": "#E0B48F",
       "hair": "#6B4B2E"
     },
     {
       "slug": "dev",
-      "name": "Dev",
+      "name": "Ultron",
       "role": "Senior Full-Stack Systems Developer",
-      "color": "#3B82F6",
+      "color": "#DC2F3D",
       "skin": "#B57A55",
       "hair": "#111111"
     },
     {
       "slug": "tech",
-      "name": "Tech",
+      "name": "EDITH",
       "role": "IT Support & Systems Technician",
-      "color": "#8B5CF6",
+      "color": "#0F9F6E",
       "skin": "#D9A27C",
       "hair": "#3A2A20"
     },
     {
       "slug": "gia",
-      "name": "Gia",
+      "name": "Jocasta",
       "role": "Growth & Creative Assistant",
-      "color": "#EC9F05",
+      "color": "#1F8A84",
       "skin": "#C98E6B",
       "hair": "#4A2C1A"
     }
