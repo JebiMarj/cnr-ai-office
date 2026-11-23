@@ -2,7 +2,7 @@ import { hbrResponse, salesWeek, sources } from '../content';
 import { useInView, useReducedMotion } from '../hooks';
 import { CountUp, SourceLink } from '../ui';
 
-const donutColors = ['#ffc56b', '#ff8a2b', '#ff8d7a', '#ff4d88', '#d23d78', '#8d3d78', '#5c3558'];
+const donutColors = ['#febd63', '#f79521', '#f0a06a', '#e4396e', '#c4536a', '#8d3d62', '#5c3548'];
 
 export function Impact() {
   return (

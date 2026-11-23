@@ -48,7 +48,7 @@ export function Hero() {
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <p className="eyebrow load-in">
-            <img src="/mark.png" alt="" width="22" height="22" />
+            <img src="/cnr-logo-128.png" alt="" width="22" height="22" />
             Philippines · AI agents on Grok · GoHighLevel
           </p>
           <h1 className="load-in">

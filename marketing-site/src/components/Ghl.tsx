@@ -86,9 +86,9 @@ export function Ghl() {
           >
             <defs>
               <linearGradient id={gradId} x1="0" y1="0" x2={narrow ? '0' : '1'} y2={narrow ? '1' : '0'}>
-                <stop offset="0" stopColor="#ffc56b" />
-                <stop offset="0.5" stopColor="#ff8a2b" />
-                <stop offset="1" stopColor="#ff4d88" />
+                <stop offset="0" stopColor="#febd63" />
+                <stop offset="0.5" stopColor="#f79521" />
+                <stop offset="1" stopColor="#e4396e" />
               </linearGradient>
             </defs>
             <path className="flow-base" d={pathD} />

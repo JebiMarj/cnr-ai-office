@@ -1,6 +1,6 @@
-# Create & Reach marketing site
+# Create & Reach Intelligence marketing site
 
-A one-page marketing site for Create & Reach VA Services. It is a separate Vite app from the C&R AI Office. Do not deploy it over the live office at `https://cnr-ai-office.onrender.com`, and do not change that service’s build, Supabase, or Render settings.
+A one-page marketing site for Create & Reach Intelligence. It is a separate Vite app from the C&R AI Office. Do not deploy it over the live office at `https://cnr-ai-office.onrender.com`, and do not change that service’s build, Supabase, or Render settings.
 
 ## Preview locally
 

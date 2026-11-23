@@ -5,8 +5,8 @@ export function Footer() {
     <footer className="footer">
       <div className="wrap footer-grid">
         <div>
-          <p className="brand-name">Create &amp; Reach</p>
-          <p>VA Services · Philippines</p>
+          <p className="brand-name">Create &amp; Reach Intelligence</p>
+          <p>by Create &amp; Reach Intelligence · Philippines</p>
           <p>
             <a href="https://createandreachva.com">createandreachva.com</a>
           </p>
@@ -24,7 +24,7 @@ export function Footer() {
           separate from the AI Office app.
         </p>
       </div>
-      <p className="legal">© {new Date().getFullYear()} Create &amp; Reach VA Services</p>
+      <p className="legal">© {new Date().getFullYear()} Create &amp; Reach Intelligence</p>
     </footer>
   );
 }

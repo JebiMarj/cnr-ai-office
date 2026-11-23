@@ -138,7 +138,7 @@ export const proof = [
   {
     kicker: 'Home cleaning company · anonymized',
     title: 'GoHighLevel, under the agency account',
-    text: 'The company moved its GoHighLevel account under Create & Reach so the monthly software cost would come down. Forms and automations were set up as part of the same work. We are not publishing a dollar figure.',
+    text: 'The company moved its GoHighLevel account under Create & Reach Intelligence so the monthly software cost would come down. Forms and automations were set up as part of the same work. We are not publishing a dollar figure.',
     counts: [],
     pending: false,
   },
@@ -150,7 +150,7 @@ export const proof = [
     pending: false,
   },
   {
-    kicker: 'Create & Reach · our own site',
+    kicker: 'Create & Reach Intelligence · our own site',
     title: 'Website-chat alerts, in-house',
     text: 'We use the same pattern on the agency site. A new chat can email the team right away, so a conversation does not wait for someone to refresh the page.',
     counts: [],

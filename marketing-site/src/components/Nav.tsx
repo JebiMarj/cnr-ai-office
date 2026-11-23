@@ -24,10 +24,9 @@ export function Nav() {
       ) : null}
       <div className="wrap nav-inner">
         <a className="brand" href="#top">
-          <img src="/mark.png" alt="" width="40" height="40" />
+          <img src="/cnr-logo-128.png" width="40" height="40" alt="" />
           <span>
-            <span className="brand-name">Create &amp; Reach</span>
-            <span className="brand-sub">VA Services</span>
+            <span className="brand-name">Create &amp; Reach Intelligence</span>
           </span>
         </a>
         <nav id="mobile-nav" className={`nav-links${open ? ' is-open' : ''}`} aria-label="Page">

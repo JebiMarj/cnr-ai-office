@@ -1,8 +1,12 @@
 {
-  "name": "Create & Reach",
-  "short_name": "Create & Reach",
+  "name": "Create & Reach Intelligence",
+  "short_name": "C&R Intelligence",
   "display": "standalone",
-  "background_color": "#09080e",
-  "theme_color": "#09080e",
-  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+  "background_color": "#1C1A22",
+  "theme_color": "#1C1A22",
+  "icons": [
+    { "src": "/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/cnr-logo-128.png", "sizes": "128x133", "type": "image/png" },
+    { "src": "/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
 }
