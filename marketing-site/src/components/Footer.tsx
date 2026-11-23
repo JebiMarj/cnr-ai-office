@@ -1,4 +1,3 @@
-import { BrandLockup } from './BrandLockup';
 import { navLinks } from '../content';
 
 export function Footer() {
@@ -6,7 +5,7 @@ export function Footer() {
     <footer className="footer">
       <div className="wrap footer-grid">
         <div>
-          <BrandLockup size="footer" />
+          <img className="logo logo-footer" src="/cnri-lockup.png" alt="Create & Reach Intelligence" />
           <p>by Create &amp; Reach Intelligence · Philippines</p>
           <p>
             <a href="https://createandreachva.com">createandreachva.com</a>
