@@ -1,0 +1,8 @@
+{
+  "name": "Create & Reach",
+  "short_name": "Create & Reach",
+  "display": "standalone",
+  "background_color": "#09080e",
+  "theme_color": "#09080e",
+  "icons": [{ "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }]
+}
