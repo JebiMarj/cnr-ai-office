@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BrandLockup } from './BrandLockup';
 import { navLinks } from '../content';
 
 export function Nav() {
@@ -23,11 +24,8 @@ export function Nav() {
         <button type="button" className="scrim" aria-label="Close menu" onClick={() => setOpen(false)} />
       ) : null}
       <div className="wrap nav-inner">
-        <a className="brand" href="#top">
-          <img src="/cnr-logo-128.png" width="40" height="40" alt="" />
-          <span>
-            <span className="brand-name">Create &amp; Reach Intelligence</span>
-          </span>
+        <a className="brand" href="#top" aria-label="Create & Reach Intelligence">
+          <BrandLockup size="nav" />
         </a>
         <nav id="mobile-nav" className={`nav-links${open ? ' is-open' : ''}`} aria-label="Page">
           {navLinks.map((link) => (

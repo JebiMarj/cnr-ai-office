@@ -156,8 +156,19 @@ section { position: relative; z-index: 1; padding: 112px 0; }
 }
 .nav-inner { display: flex; align-items: center; justify-content: space-between; min-height: 74px; gap: 16px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: inherit; }
-.brand img { width: 40px; height: 40px; border-radius: 12px; background: #fff; padding: 2px; object-fit: contain; }
 .brand-name { display: block; font-family: var(--serif); font-weight: 700; letter-spacing: -0.03em; font-size: 15px; line-height: 1.15; }
+.lockup { display: inline-flex; align-items: center; gap: 10px; color: #fff; }
+.lockup-mark { display: block; background: none; padding: 0; border-radius: 0; object-fit: contain; }
+.lockup-words { display: flex; flex-direction: column; font-family: var(--serif); font-weight: 600; letter-spacing: -0.035em; line-height: 0.95; }
+.lockup-line2 { display: inline-flex; align-items: center; }
+.lockup-spark { width: 0.62em; height: 0.62em; margin-left: 0.16em; }
+.lockup-nav .lockup-mark { width: 42px; height: 42px; }
+.lockup-nav .lockup-words { font-size: 13.5px; }
+.lockup-hero { margin-bottom: 18px; }
+.lockup-hero .lockup-mark { width: 78px; height: 78px; }
+.lockup-hero .lockup-words { font-size: 28px; }
+.lockup-footer .lockup-mark { width: 54px; height: 54px; }
+.lockup-footer .lockup-words { font-size: 18px; }
 .brand-sub { display: block; color: var(--faint); font-size: 0.78rem; font-weight: 650; }
 .nav-links { display: flex; align-items: center; gap: 16px; }
 .nav-links a { color: var(--muted); text-decoration: none; font-weight: 600; font-size: 0.95rem; }
@@ -476,6 +487,9 @@ input:user-invalid, textarea:user-invalid, select:user-invalid { border-color: #
 @media (max-width: 719px) {
   section { padding: 72px 0; }
   .role-grid { margin-top: 28px; }
+  .lockup-hero .lockup-mark { width: 56px; height: 56px; }
+  .lockup-hero .lockup-words { font-size: 22px; }
+  .lockup-nav .lockup-words { font-size: 12.5px; }
 }
 
 @media (min-width: 720px) {

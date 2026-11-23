@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from '../hooks';
+import { BrandLockup } from './BrandLockup';
 import { OfficeScreen, PhoneFrame } from './Phone';
 
 export function Hero() {
@@ -47,10 +48,10 @@ export function Hero() {
       </div>
       <div className="wrap hero-grid">
         <div className="hero-copy">
-          <p className="eyebrow load-in">
-            <img src="/cnr-logo-128.png" alt="" width="22" height="22" />
-            Philippines · AI agents on Grok · GoHighLevel
-          </p>
+          <div className="load-in">
+            <BrandLockup size="hero" />
+          </div>
+          <p className="eyebrow load-in">Philippines · AI agents on Grok · GoHighLevel</p>
           <h1 className="load-in">
             Close more deals with an <em className="grad">AI sales team</em> in your pocket.
           </h1>
