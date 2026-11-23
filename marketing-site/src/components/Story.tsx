@@ -1,35 +1,33 @@
-import { storyPoints } from '../content';
+import { agents } from '../content';
 import { Icon } from '../icons';
-import { Reveal, SectionHead } from '../ui';
+import { SectionHead } from '../ui';
 import { PhoneFrame, StoryScreen } from './Phone';
 
 export function Story() {
   return (
-    <section className="band" id="story">
-      <div className="wrap story-grid">
-        <Reveal className="story-copy">
+    <section id="story">
+      <div className="wrap">
+        <div className="story-grid">
           <SectionHead
-            kicker="Featured story · anonymized"
+            kicker="On your phone"
             title="A full AI team, on one phone."
-            lede="A cleaning franchise owner in Connecticut keeps his day on his phone. Create & Reach built him a custom AI team on Grok. He talks to it by voice. Nothing emails a customer until he has read the draft."
+            lede="A cleaning franchise owner in Connecticut talks to it by voice. Emails stay drafts. His admin’s team of 10 was set up in a few days."
           />
-          <ul className="check-list">
-            {storyPoints.map((point) => (
-              <li key={point}>
-                <Icon name="check" />
-                <span>{point}</span>
-              </li>
-            ))}
-          </ul>
-          <p className="aside">
-            His office admin got her own team of 10 AI agents. That desk was set up in a few days. It is separate from his.
-          </p>
-        </Reveal>
-        <Reveal delay={120}>
-          <PhoneFrame label="Phone conversation with the AI team typing a morning plan, a calendar card, and drafts">
+          <PhoneFrame label="A short voice check-in with the AI team. Emails stay drafts.">
             <StoryScreen />
           </PhoneFrame>
-        </Reveal>
+        </div>
+        <ul className="role-grid">
+          {agents.map((agent) => (
+            <li key={agent.id}>
+              <span className="icon-badge">
+                <Icon name={agent.id} />
+              </span>
+              <h3>{agent.name}</h3>
+              <p>{agent.line}</p>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   );

@@ -55,23 +55,17 @@ export function Hero() {
             Close more deals with an <em className="grad">AI sales team</em> in your pocket.
           </h1>
           <p className="lede load-in">
-            Create &amp; Reach builds custom AI assistants, plus the GoHighLevel automation behind them, for cleaning
-            businesses and sales teams. Talk to your team by voice. Every customer email stays a draft until you send it.
+            AI assistants on Grok, plus GoHighLevel, for cleaning businesses and sales teams. You talk by voice. Emails
+            stay drafts.
           </p>
           <div className="hero-cta load-in">
             <a className="btn btn-primary" href="#contact">
               Book a Free Strategy Call
             </a>
             <a className="btn btn-ghost" href="#story">
-              See the story
+              See it on a phone
             </a>
           </div>
-          <ul className="pills load-in">
-            <li>Drafts stay drafts</li>
-            <li>Voice on your phone</li>
-            <li>Cleaning businesses</li>
-            <li>Sales teams</li>
-          </ul>
         </div>
         <div className="hero-stage">
           <div className="tilt" ref={stage}>

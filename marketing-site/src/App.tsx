@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react';
 import { useReducedMotion } from './hooks';
-import { Audiences } from './components/Audiences';
 import { Builder } from './components/Builder';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
@@ -8,10 +7,7 @@ import { Ghl } from './components/Ghl';
 import { Hero } from './components/Hero';
 import { Impact } from './components/Impact';
 import { Nav } from './components/Nav';
-import { Process } from './components/Process';
-import { Proof } from './components/Proof';
 import { Story } from './components/Story';
-import { Team } from './components/Team';
 export function App() {
   const bar = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
@@ -40,13 +36,9 @@ export function App() {
       <main id="main">
         <Hero />
         <Story />
-        <Team />
-        <Ghl />
-        <Audiences />
         <Impact />
-        <Proof />
+        <Ghl />
         <Builder />
-        <Process />
         <Contact />
       </main>
       <Footer />

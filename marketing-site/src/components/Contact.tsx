@@ -29,7 +29,7 @@ export function Contact() {
         <SectionHead
           kicker="Final call"
           title="Book a free strategy call."
-          lede="Tell us whether you want an AI team, a GoHighLevel setup, or both. Bring the messy process. We’ll tell you plainly what we would build."
+          lede="An AI team, a GoHighLevel setup, or both. This form does not send yet."
         />
         {sent ? (
           <div className="success" role="status">

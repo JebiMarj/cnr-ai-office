@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef } from 'react';
-import { flowSteps, ghlServices } from '../content';
+import { flowSteps } from '../content';
 import { useMedia, useReducedMotion } from '../hooks';
-import { Reveal, SectionHead } from '../ui';
+import { Icon } from '../icons';
+import { SectionHead } from '../ui';
 
 export function Ghl() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -73,8 +74,8 @@ export function Ghl() {
       <div className="wrap">
         <SectionHead
           kicker="GoHighLevel"
-          title="The lead should not wait in an inbox no one is watching."
-          lede="We set up the CRM and the automations that carry a website chat or form to the right person. The line below draws as you scroll. The words are the workflow."
+          title="From the website to the right person."
+          lede="Chat or form, then the CRM, then an alert. The line draws as you scroll."
         />
         <div className={`flow${narrow ? ' is-vertical' : ''}`}>
           <svg
@@ -96,22 +97,13 @@ export function Ghl() {
           <ol className="flow-steps">
             {flowSteps.map((step) => (
               <li key={step.n} className="flow-step">
-                <span className="node" />
-                <p className="flow-n">{step.n}</p>
+                <span className="icon-badge">
+                  <Icon name={step.icon} />
+                </span>
                 <h3>{step.title}</h3>
-                <p>{step.text}</p>
               </li>
             ))}
           </ol>
-        </div>
-        <div className="service-grid">
-          {ghlServices.map((service, index) => (
-            <Reveal key={service.title} delay={index * 40} className="service">
-              <span>0{index + 1}</span>
-              <h3>{service.title}</h3>
-              <p>{service.text}</p>
-            </Reveal>
-          ))}
         </div>
       </div>
     </section>

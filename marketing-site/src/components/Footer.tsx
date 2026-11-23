@@ -20,8 +20,8 @@ export function Footer() {
           <a href="#contact">Book a call</a>
         </nav>
         <p className="fine">
-          Stories on this page are anonymized. Industry charts cite the publisher and year. The illustrated week is
-          labeled as an example. This marketing site is separate from the Create &amp; Reach AI Office app.
+          Stories are anonymized. Research figures stay in “See the research,” with the publisher and year. This page is
+          separate from the AI Office app.
         </p>
       </div>
       <p className="legal">© {new Date().getFullYear()} Create &amp; Reach VA Services</p>

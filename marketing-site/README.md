@@ -33,7 +33,7 @@ Create a **new** Static Site. Leave the existing AI Office service alone.
 
 ## Sources used in “Why it works”
 
-These are industry figures, not client results. The illustrated week on that section is labeled as an example and is not data.
+These are industry figures, not client results. The page shows three of them. The charts and the other citations sit behind “See the research.” There is no illustrative before-and-after.
 
 - Harvard Business Review, March 2011, “The Short Life of Online Sales Leads” — https://hbr.org/2011/03/the-short-life-of-online-sales-leads
 - Salesforce, State of Sales, 7th edition, 2026 — https://www.salesforce.com/en-us/wp-content/uploads/sites/4/documents/reports/sales/salesforce-state-of-sales-report-2026.pdf

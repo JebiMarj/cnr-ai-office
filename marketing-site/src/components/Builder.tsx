@@ -44,8 +44,8 @@ export function Builder() {
         <div>
           <SectionHead
             kicker="What’s possible"
-            title="Build a first sketch of your AI team."
-            lede="Toggle what you want help with. We’ll show a starting team and the GoHighLevel pieces that sit behind it. This is a conversation starter, not a quote."
+            title="Sketch the team."
+            lede="Pick what you need. This is a starting point, not a quote."
           />
           <div className="need-grid">
             {needs.map((need) => {
@@ -59,7 +59,6 @@ export function Builder() {
                   onClick={() => toggle(need.id)}
                 >
                   <strong>{need.label}</strong>
-                  <span>{need.hint}</span>
                 </button>
               );
             })}
@@ -68,7 +67,7 @@ export function Builder() {
         <div className="sketch" aria-live="polite">
           <p className="kicker">Suggested setup</p>
           {plan.agents.length === 0 ? (
-            <p>Choose a few needs. The executive assistant shows up as soon as you pick one, because that is the voice on the phone.</p>
+            <p>Pick a need. The executive assistant is the voice on the phone.</p>
           ) : (
             <>
               <ul className="chips" key={plan.agents.join('|')}>
@@ -76,12 +75,7 @@ export function Builder() {
                   <li key={name}>{name}</li>
                 ))}
               </ul>
-              <h3>GoHighLevel behind them</h3>
-              <ul className="ghl-list">
-                {plan.ghl.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
+              <p className="fine">{plan.ghl.join(' · ')}</p>
             </>
           )}
           <p className="sr-only">{summary}</p>

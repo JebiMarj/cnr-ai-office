@@ -1,12 +1,9 @@
 export const PREFILL_EVENT = 'cr:prefill';
 
 export const navLinks = [
-  { href: '#story', label: 'Story' },
-  { href: '#team', label: 'AI team' },
-  { href: '#ghl', label: 'GHL' },
-  { href: '#who', label: 'Who it’s for' },
+  { href: '#story', label: 'On your phone' },
   { href: '#impact', label: 'Why it works' },
-  { href: '#proof', label: 'Proof' },
+  { href: '#ghl', label: 'GHL' },
   { href: '#builder', label: 'Build' },
 ] as const;
 
@@ -21,41 +18,13 @@ export const heroBots = [
 
 export const storyLines = [
   { who: 'you', name: 'You · voice', text: 'Plan my day.' },
-  {
-    who: 'ea',
-    name: 'Executive Assistant',
-    text: 'Game plan is ready. Quote review, one callback, and a 2:00 walkthrough.',
-  },
+  { who: 'ea', name: 'Executive Assistant', text: 'Quote review, one callback, and a 2:00 walkthrough.' },
   {
     who: 'cal',
     name: 'Calendar',
-    text: 'Company — Contact · (203) 555-0148 · Latest CRM note: revisit the quote after the holiday week.',
+    text: 'Company — Contact · (203) 555-0148 · Latest note: revisit the quote after the holiday week.',
   },
-  {
-    who: 'coach',
-    name: 'Sales Coach',
-    text: 'Follow-up draft uses that CRM note. It is still a draft.',
-  },
-  {
-    who: 'calls',
-    name: 'Call Analyst',
-    text: 'Yesterday’s call is summarized. The draft and next steps are waiting for your review.',
-  },
-  {
-    who: 'travel',
-    name: 'Travel Planner',
-    text: 'Thursday’s visits are grouped by town. Drive time is on the plan.',
-  },
-  {
-    who: 'comp',
-    name: 'Comp Analyst',
-    text: 'That quote sits under similar jobs. Flagged for you. The price was not changed.',
-  },
-  {
-    who: 'ea',
-    name: 'Executive Assistant',
-    text: 'Your admin’s team of 10 is live. It was set up in a few days, separate from yours.',
-  },
+  { who: 'coach', name: 'Sales Coach', text: 'Follow-up is drafted from that note. Not sent.' },
 ] as const;
 
 export const storyPoints = [
@@ -71,77 +40,23 @@ export const storyPoints = [
 
 export type AgentId = 'ea' | 'coach' | 'writer' | 'planner' | 'calls' | 'travel' | 'comp' | 'admin';
 
-export const agents: {
-  id: AgentId;
-  name: string;
-  role: string;
-  demo: string;
-  more: string;
-}[] = [
-  {
-    id: 'ea',
-    name: 'Executive Assistant',
-    role: 'The voice on the phone. Keeps the day moving and answers in plain language.',
-    demo: 'Two quotes before noon, then a 2:00 walkthrough. I can read them in drive order.',
-    more: 'You talk. It answers. The specialists work behind that conversation, and you still approve anything that goes out.',
-  },
-  {
-    id: 'coach',
-    name: 'Sales Coach',
-    role: 'Drafts the next note from the deal, not from a blank page.',
-    demo: 'Draft mentions the holiday pause from Tuesday’s CRM note. Still a draft.',
-    more: 'It reads the history already in the CRM. You fix the tone, then you send it. It does not send itself.',
-  },
-  {
-    id: 'writer',
-    name: 'Follow-Up Writer',
-    role: 'Writes the email and leaves it sitting in drafts.',
-    demo: 'Subject: Checking back on the bi-weekly quote. In drafts. Not sent.',
-    more: 'A subject, a short body, and a stop. The send button stays with a person.',
-  },
-  {
-    id: 'planner',
-    name: 'Day Planner',
-    role: 'A morning game plan for today and the rest of the week.',
-    demo: 'Today: three calls, one site visit. Thursday is the pipeline pass.',
-    more: 'Quiet deals come back onto the day. The plan is a suggestion you can rearrange.',
-  },
-  {
-    id: 'calls',
-    name: 'Call Analyst',
-    role: 'Turns a recording into a summary, a draft, and the next step.',
-    demo: 'They want a revised quote by Friday. The next step is in the draft.',
-    more: 'The recording stays attached. You read the summary before anyone is emailed.',
-  },
-  {
-    id: 'travel',
-    name: 'Travel Planner',
-    role: 'Lines up visits and puts the drive time on the plan.',
-    demo: 'Two stops, same town. The closer one is first. Drive time is noted.',
-    more: 'Useful when the day is a truck and a list of addresses, not a desk.',
-  },
-  {
-    id: 'comp',
-    name: 'Comp / Pricing Analyst',
-    role: 'Compares a quote with similar jobs and leaves the price alone.',
-    demo: 'This quote is under the last similar jobs. Flagged. Price unchanged.',
-    more: 'It shows the context. You decide whether the number moves.',
-  },
-  {
-    id: 'admin',
-    name: 'Office Admin Assistant',
-    role: 'The extra pair of hands for the person running the office.',
-    demo: 'Reminders, invoices, and inbox triage are split up. Outbound still waits.',
-    more: 'One office admin got her own team of 10 agents. That desk was set up in a few days.',
-  },
+export const agents: { id: AgentId; name: string; line: string }[] = [
+  { id: 'ea', name: 'Executive Assistant', line: 'You talk. It keeps the day moving.' },
+  { id: 'coach', name: 'Sales Coach', line: 'Drafts the next note from the CRM.' },
+  { id: 'writer', name: 'Follow-Up Writer', line: 'Writes the email. Leaves it in drafts.' },
+  { id: 'planner', name: 'Day Planner', line: 'Lays out today and the week.' },
+  { id: 'calls', name: 'Call Analyst', line: 'A recording becomes the next step.' },
+  { id: 'travel', name: 'Travel Planner', line: 'Groups the visits and the drive.' },
+  { id: 'comp', name: 'Comp / Pricing Analyst', line: 'Flags the price. Does not change it.' },
+  { id: 'admin', name: 'Office Admin Assistant', line: 'Inbox, reminders, and invoices.' },
 ];
 
 export const flowSteps = [
-  { n: '01', title: 'Chat or form', text: 'A visitor asks a question or requests a quote on the site.' },
-  { n: '02', title: 'GHL CRM', text: 'The lead lands on the right contact, with the note attached.' },
-  { n: '03', title: 'Automation', text: 'GoHighLevel routes it by service, area, or teammate.' },
-  { n: '04', title: 'Team email', text: 'The people who need to act get an alert right away.' },
-  { n: '05', title: 'Follow-up', text: 'A person, or a draft from the AI team, takes the next step.' },
+  { n: '01', title: 'Chat or form', icon: 'chat' },
+  { n: '02', title: 'GHL CRM', icon: 'crm' },
+  { n: '03', title: 'Automation', icon: 'bolt' },
+  { n: '04', title: 'Team alert', icon: 'mail' },
+  { n: '05', title: 'Follow-up', icon: 'check' },
 ] as const;
 
 export const ghlServices = [
