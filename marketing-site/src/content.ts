@@ -210,7 +210,7 @@ export const agentOrder = [
 export const processSteps = [
   { n: '01', title: 'Discovery call', text: 'We learn the business, the tools you already pay for, and where deals stall.' },
   { n: '02', title: 'Map your processes', text: 'Follow-ups, booking, invoicing, alerts. We write down how work actually moves.' },
-  { n: '03', title: 'We build the team and the CRM', text: 'AI Agents, plus the CRM and automations behind them.' },
+  { n: '03', title: 'We build your AI Agents', text: 'Plus the CRM and automations behind them.' },
   { n: '04', title: 'Training and turnover', text: 'Your people learn the phone, the drafts, and the pipeline. Then it is yours to run.' },
 ] as const;
 

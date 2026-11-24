@@ -6,7 +6,7 @@ export function Footer() {
       <div className="wrap footer-grid">
         <div>
           <img className="logo logo-footer" src="/cnri-lockup.png" alt="Create & Reach Intelligence" />
-          <p>by Create &amp; Reach Intelligence · Philippines</p>
+          <p>by Create &amp; Reach Intelligence</p>
           <p>
             <a href="https://createandreachva.com">createandreachva.com</a>
           </p>
