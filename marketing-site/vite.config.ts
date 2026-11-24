@@ -9,5 +9,7 @@ export default defineConfig({
     outDir: 'dist',
     assetsDir: 'assets',
     sourcemap: false,
+    // Keep font files separate so the stylesheet stays free of inlined font bytes.
+    assetsInlineLimit: 0,
   },
 });

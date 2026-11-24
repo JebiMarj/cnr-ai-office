@@ -19,7 +19,7 @@ npm run build
 npm run preview
 ```
 
-No environment variables are required. The contact form is a placeholder. It does not send. A comment in `src/components/Contact.tsx` marks where a GoHighLevel form webhook will connect later.
+No environment variables are required to build or preview. The contact form is a placeholder. It does not send. A comment in `src/components/Contact.tsx` marks where a CRM form webhook (`VITE_CRM_FORM_WEBHOOK_URL`) will connect later.
 
 ## Deploy as its own Render static site
 
@@ -29,7 +29,7 @@ Create a **new** Static Site. Leave the existing AI Office service alone.
 - Build command: `npm ci && npm run build`
 - Publish directory: `dist`
 - Node: 20 or newer
-- Environment variables: none
+- Environment variables: none required. When the form is wired up, set `VITE_CRM_FORM_WEBHOOK_URL` to the CRM webhook.
 
 ## Sources used in “Why it works”
 

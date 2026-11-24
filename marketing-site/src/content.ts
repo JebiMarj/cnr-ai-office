@@ -3,7 +3,7 @@ export const PREFILL_EVENT = 'cr:prefill';
 export const navLinks = [
   { href: '#story', label: 'On your phone' },
   { href: '#impact', label: 'Why it works' },
-  { href: '#ghl', label: 'GHL' },
+  { href: '#crm', label: 'CRM' },
   { href: '#builder', label: 'Build' },
 ] as const;
 
@@ -53,19 +53,19 @@ export const agents: { id: AgentId; name: string; line: string }[] = [
 
 export const flowSteps = [
   { n: '01', title: 'Chat or form', icon: 'chat' },
-  { n: '02', title: 'GHL CRM', icon: 'crm' },
+  { n: '02', title: 'CRM', icon: 'crm' },
   { n: '03', title: 'Automation', icon: 'bolt' },
   { n: '04', title: 'Team alert', icon: 'mail' },
   { n: '05', title: 'Follow-up', icon: 'check' },
 ] as const;
 
-export const ghlServices = [
+export const crmServices = [
   { title: 'CRM and pipeline setup', text: 'Stages that match how you actually sell, with contacts and notes in one place.' },
   { title: 'Website chat and form alerts', text: 'A chat or a form emails the right people the moment it comes in.' },
-  { title: 'Booking and forms', text: 'Quote requests, estimates, and appointments land in GoHighLevel.' },
+  { title: 'Booking and forms', text: 'Quote requests, estimates, and appointments land in the CRM.' },
   { title: 'Reminders and holiday campaigns', text: 'The nudge can go out while you are on a job, including the weeks people forget.' },
   { title: 'Statements and invoices', text: 'Statement and invoice distribution on a rhythm you approve.' },
-  { title: 'Account migration', text: 'Move a GoHighLevel account under the agency when that cuts the monthly software cost.' },
+  { title: 'Account migration', text: 'Move a CRM account under the agency when that cuts the monthly software cost.' },
   { title: 'Team training', text: 'The people who live in the CRM learn it before we hand it over.' },
 ] as const;
 
@@ -76,7 +76,7 @@ export const audiences = {
     pairs: [
       {
         pain: 'Leads from the website sit until someone is back at a desk.',
-        fix: 'Chat and forms hit GoHighLevel and email the team when they arrive.',
+        fix: 'Chat and forms hit the CRM and email the team when they arrive.',
       },
       {
         pain: 'The owner is on a job, not in front of a laptop.',
@@ -114,7 +114,7 @@ export const audiences = {
       },
       {
         pain: 'Booking, reminders, and holiday notes are manual.',
-        fix: 'GoHighLevel handles booking, reminders, and holiday campaigns.',
+        fix: 'The CRM handles booking, reminders, and holiday campaigns.',
       },
       {
         pain: 'The pipeline looks different in every rep’s head.',
@@ -137,8 +137,8 @@ export const proof = [
   },
   {
     kicker: 'Home cleaning company · anonymized',
-    title: 'GoHighLevel, under the agency account',
-    text: 'The company moved its GoHighLevel account under Create & Reach Intelligence so the monthly software cost would come down. Forms and automations were set up as part of the same work. We are not publishing a dollar figure.',
+    title: 'The CRM, under the agency account',
+    text: 'The company moved its CRM account under Create & Reach Intelligence so the monthly software cost would come down. Forms and automations were set up as part of the same work. We are not publishing a dollar figure.',
     counts: [],
     pending: false,
   },
@@ -169,30 +169,30 @@ export const needs = [
 
 export type NeedId = (typeof needs)[number]['id'];
 
-export const needPlan: Record<NeedId, { agents: string[]; ghl: string }> = {
+export const needPlan: Record<NeedId, { agents: string[]; crm: string }> = {
   followups: {
     agents: ['Sales Coach', 'Follow-Up Writer'],
-    ghl: 'Pipeline stages, plus a task when a deal goes quiet',
+    crm: 'Pipeline stages, plus a task when a deal goes quiet',
   },
   scheduling: {
     agents: ['Day Planner', 'Travel Planner'],
-    ghl: 'A booking calendar tied to the day plan',
+    crm: 'A booking calendar tied to the day plan',
   },
   calls: {
     agents: ['Call Analyst'],
-    ghl: 'A place on the contact for the call summary and next step',
+    crm: 'A place on the contact for the call summary and next step',
   },
   crm: {
     agents: ['Sales Coach'],
-    ghl: 'CRM and pipeline setup so drafts can see the history',
+    crm: 'CRM and pipeline setup so drafts can see the history',
   },
   reminders: {
     agents: ['Executive Assistant'],
-    ghl: 'Automated reminders and holiday campaigns',
+    crm: 'Automated reminders and holiday campaigns',
   },
   invoicing: {
     agents: ['Office Admin Assistant'],
-    ghl: 'Statement and invoice distribution',
+    crm: 'Statement and invoice distribution',
   },
 };
 
@@ -210,7 +210,7 @@ export const agentOrder = [
 export const processSteps = [
   { n: '01', title: 'Discovery call', text: 'We learn the business, the tools you already pay for, and where deals stall.' },
   { n: '02', title: 'Map your processes', text: 'Follow-ups, booking, invoicing, alerts. We write down how work actually moves.' },
-  { n: '03', title: 'We build the team and GHL', text: 'Agents on Grok, plus the CRM and automations behind them.' },
+  { n: '03', title: 'We build the team and the CRM', text: 'AI Agents, plus the CRM and automations behind them.' },
   { n: '04', title: 'Training and turnover', text: 'Your people learn the phone, the drafts, and the pipeline. Then it is yours to run.' },
 ] as const;
 

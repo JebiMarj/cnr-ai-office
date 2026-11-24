@@ -19,7 +19,7 @@ export function Contact() {
   function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     // Placeholder only — no backend in this static site.
-    // Later, this form will POST to a GoHighLevel form / webhook.
+    // Later, this form will POST to the CRM webhook in VITE_CRM_FORM_WEBHOOK_URL.
     setSent(true);
   }
 
@@ -29,14 +29,14 @@ export function Contact() {
         <SectionHead
           kicker="Final call"
           title="Book a free strategy call."
-          lede="An AI team, a GoHighLevel setup, or both. This form does not send yet."
+          lede="An AI team, a CRM setup, or both. This form does not send yet."
         />
         {sent ? (
           <div className="success" role="status">
             <h3>Nothing was sent.</h3>
             <p>
               This preview form is not connected yet. When the marketing site goes live, the same fields will post to a
-              GoHighLevel form webhook. Your note stayed in this browser.
+              CRM form webhook. Your note stayed in this browser.
             </p>
             <button type="button" className="btn btn-ghost" onClick={() => setSent(false)}>
               Edit the note
@@ -72,7 +72,7 @@ export function Contact() {
                 I need
                 <select name="need" defaultValue="both" required>
                   <option value="ai">An AI team</option>
-                  <option value="ghl">A GoHighLevel setup</option>
+                  <option value="crm">A CRM setup</option>
                   <option value="both">Both</option>
                   <option value="unsure">Not sure yet</option>
                 </select>
@@ -86,7 +86,7 @@ export function Contact() {
               Request the strategy call
             </button>
             <p className="fine">
-              This form does not send yet. It will connect to a GoHighLevel webhook later. Please don’t include
+              This form does not send yet. It will connect to a CRM webhook later. Please don’t include
               passwords, customer lists, or other secrets.
             </p>
           </form>

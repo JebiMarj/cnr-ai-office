@@ -48,12 +48,12 @@ export function Hero() {
       <div className="wrap hero-grid">
         <div className="hero-copy">
           <img className="logo logo-hero load-in" src="/cnri-lockup.png" alt="Create & Reach Intelligence" />
-          <p className="eyebrow load-in">Philippines · AI agents on Grok · GoHighLevel</p>
+          <p className="eyebrow load-in">Philippines · AI Agents · CRM</p>
           <h1 className="load-in">
             Close more deals with an <em className="grad">AI sales team</em> in your pocket.
           </h1>
           <p className="lede load-in">
-            AI assistants on Grok, plus GoHighLevel, for cleaning businesses and sales teams. You talk by voice. Emails
+            AI Agents, plus a CRM, for cleaning businesses and sales teams. You talk by voice. Emails
             stay drafts.
           </p>
           <div className="hero-cta load-in">

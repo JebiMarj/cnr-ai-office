@@ -332,11 +332,11 @@ section { position: relative; z-index: 1; padding: 112px 0; }
   z-index: 1;
   display: block;
 }
-.ghl[data-step='1'] .flow-step:nth-child(-n + 1) .icon-badge,
-.ghl[data-step='2'] .flow-step:nth-child(-n + 2) .icon-badge,
-.ghl[data-step='3'] .flow-step:nth-child(-n + 3) .icon-badge,
-.ghl[data-step='4'] .flow-step:nth-child(-n + 4) .icon-badge,
-.ghl[data-step='5'] .flow-step .icon-badge {
+.crm-flow[data-step='1'] .flow-step:nth-child(-n + 1) .icon-badge,
+.crm-flow[data-step='2'] .flow-step:nth-child(-n + 2) .icon-badge,
+.crm-flow[data-step='3'] .flow-step:nth-child(-n + 3) .icon-badge,
+.crm-flow[data-step='4'] .flow-step:nth-child(-n + 4) .icon-badge,
+.crm-flow[data-step='5'] .flow-step .icon-badge {
   box-shadow: 0 0 0 6px rgba(228, 57, 110, 0.16), 0 0 22px rgba(247, 149, 33, 0.45);
 }
 .node { display: none; }
@@ -380,7 +380,7 @@ section { position: relative; z-index: 1; padding: 112px 0; }
 .chart-card h3, .example h3 { font-size: 1.45rem; }
 .stack { display: flex; height: 22px; border-radius: 999px; overflow: hidden; background: rgba(255, 255, 255, 0.06); margin: 8px 0 14px; }
 .stack i { display: block; height: 100%; width: 0; transition: width 1.05s cubic-bezier(0.16, 0.84, 0.32, 1); }
-.legend, .hbar-list, .compare, .chips, .ghl-list { list-style: none; padding: 0; margin: 0 0 12px; }
+.legend, .hbar-list, .compare, .chips, .crm-list { list-style: none; padding: 0; margin: 0 0 12px; }
 .legend { display: grid; gap: 6px; }
 .legend li, .compare-legend span { display: flex; gap: 8px; align-items: baseline; color: var(--muted); }
 .swatch { width: 12px; height: 12px; border-radius: 4px; flex: 0 0 auto; margin-top: 4px; }
@@ -434,7 +434,7 @@ section { position: relative; z-index: 1; padding: 112px 0; }
 .chips li:nth-child(2) { animation-delay: 0.05s; }
 .chips li:nth-child(3) { animation-delay: 0.1s; }
 .chips li:nth-child(4) { animation-delay: 0.15s; }
-.ghl-list { color: var(--muted); padding-left: 18px; list-style: disc; }
+.crm-list { color: var(--muted); padding-left: 18px; list-style: disc; }
 .steps { position: relative; }
 .steps ol { list-style: none; padding: 0; margin: 0; display: grid; gap: 18px; }
 .steps li span { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; background: #1a1522; border: 1px solid var(--line); color: var(--gold); font-weight: 750; position: relative; z-index: 1; }

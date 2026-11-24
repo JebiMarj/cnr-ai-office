@@ -4,7 +4,7 @@ import { useMedia, useReducedMotion } from '../hooks';
 import { Icon } from '../icons';
 import { SectionHead } from '../ui';
 
-export function Ghl() {
+export function CrmFlow() {
   const sectionRef = useRef<HTMLElement>(null);
   const pathRef = useRef<SVGPathElement>(null);
   const narrow = useMedia('(max-width: 800px)');
@@ -70,10 +70,10 @@ export function Ghl() {
   const pathD = narrow ? 'M6 1 V99' : 'M8 6 H992';
 
   return (
-    <section className="band ghl" id="ghl" ref={sectionRef} data-step={reduced ? '5' : '0'}>
+    <section className="band crm-flow" id="crm" ref={sectionRef} data-step={reduced ? '5' : '0'}>
       <div className="wrap">
         <SectionHead
-          kicker="GoHighLevel"
+          kicker="CRM"
           title="From the website to the right person."
           lede="Chat or form, then the CRM, then an alert. The line draws as you scroll."
         />

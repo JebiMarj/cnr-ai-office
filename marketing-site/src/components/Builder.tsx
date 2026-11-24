@@ -9,15 +9,15 @@ export function Builder() {
 
   const plan = useMemo(() => {
     const names = new Set<string>();
-    const ghl: string[] = [];
+    const crm: string[] = [];
     if (selected.length) names.add('Executive Assistant');
     for (const id of selected) {
       needPlan[id].agents.forEach((name) => names.add(name));
-      ghl.push(needPlan[id].ghl);
+      crm.push(needPlan[id].crm);
     }
     return {
       agents: agentOrder.filter((name) => names.has(name)),
-      ghl,
+      crm,
     };
   }, [selected]);
 
@@ -36,7 +36,7 @@ export function Builder() {
   const summary =
     plan.agents.length === 0
       ? 'Nothing selected yet. Pick a few needs, or skip ahead and book the call.'
-      : `Suggested team: ${plan.agents.join(', ')}. GoHighLevel: ${plan.ghl.join('; ')}.`;
+      : `Suggested team: ${plan.agents.join(', ')}. CRM: ${plan.crm.join('; ')}.`;
 
   return (
     <section className="band" id="builder">
@@ -75,7 +75,7 @@ export function Builder() {
                   <li key={name}>{name}</li>
                 ))}
               </ul>
-              <p className="fine">{plan.ghl.join(' · ')}</p>
+              <p className="fine">{plan.crm.join(' · ')}</p>
             </>
           )}
           <p className="sr-only">{summary}</p>

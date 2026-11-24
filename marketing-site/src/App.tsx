@@ -3,7 +3,7 @@ import { useReducedMotion } from './hooks';
 import { Builder } from './components/Builder';
 import { Contact } from './components/Contact';
 import { Footer } from './components/Footer';
-import { Ghl } from './components/Ghl';
+import { CrmFlow } from './components/CrmFlow';
 import { Hero } from './components/Hero';
 import { Impact } from './components/Impact';
 import { Nav } from './components/Nav';
@@ -37,7 +37,7 @@ export function App() {
         <Hero />
         <Story />
         <Impact />
-        <Ghl />
+        <CrmFlow />
         <Builder />
         <Contact />
       </main>
