@@ -131,7 +131,7 @@ export const proof = [
     text: 'Executive assistant, sales coach, morning game plan, travel assistant, and comp analyst. He talks to the team by voice. Calendar events use the Company — Contact pattern, with the phone number and the latest CRM note. Call recordings become a draft and next steps. Emails stay drafts. His office admin later got her own team.',
     counts: [
       { to: 5, suffix: '+', label: 'specialist bots for one owner' },
-      { to: 10, suffix: '', label: 'AI agents built for one admin' },
+      { to: 10, suffix: '', label: 'AI Employees built for one admin' },
     ],
     pending: true,
   },
@@ -210,7 +210,7 @@ export const agentOrder = [
 export const processSteps = [
   { n: '01', title: 'Discovery call', text: 'We learn the business, the tools you already pay for, and where deals stall.' },
   { n: '02', title: 'Map your processes', text: 'Follow-ups, booking, invoicing, alerts. We write down how work actually moves.' },
-  { n: '03', title: 'We build your AI Agents', text: 'Plus the CRM and automations behind them.' },
+  { n: '03', title: 'We build your AI Employees', text: 'Plus the CRM and automations behind them.' },
   { n: '04', title: 'Training and turnover', text: 'Your people learn the phone, the drafts, and the pipeline. Then it is yours to run.' },
 ] as const;
 
